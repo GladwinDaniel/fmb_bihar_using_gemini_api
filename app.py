@@ -1378,6 +1378,49 @@ def subdivide_parcel(plot_no):
         "strategy_name": strategy_name
     })
 
+@app.route("/api/parcel/<plot_no>/generate_report", methods=["POST"])
+def generate_report_route(plot_no):
+    try:
+        data = request.json or {}
+        features = data.get("features", [])
+        subdivisions = data.get("subdivisions", [])
+        frontage_coords = data.get("frontage", [])
+        parcel_info = data.get("parcel_info", {})
+        
+        parcel_id = request.args.get("parcel_id")
+        if parcel_id and parcel_id not in ("null", "undefined", ""):
+            parcel = Parcel.query.get(parcel_id)
+        else:
+            parcel = Parcel.query.filter_by(plot_no=plot_no).order_by(Parcel.id.desc()).first()
+            
+        if not parcel:
+            return jsonify({"error": "Parcel not found"}), 404
+            
+        parcel_vertices = [[v.lon, v.lat] for v in sorted(parcel.vertices, key=lambda x: x.sequence_order)]
+        
+        import report_generator
+        pdf_data = report_generator.generate_kurra_report(
+            plot_no=plot_no,
+            parcel_vertices=parcel_vertices,
+            features=features,
+            subdivisions=subdivisions,
+            frontage_coords=frontage_coords,
+            parcel_info=parcel_info
+        )
+        
+        if not pdf_data:
+            return jsonify({"error": "Failed to generate report"}), 500
+            
+        return Response(
+            pdf_data,
+            mimetype="application/pdf",
+            headers={"Content-Disposition": f"attachment; filename=Kurra_Report_{plot_no}.pdf"}
+        )
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return jsonify({"error": f"Failed to generate report: {str(e)}"}), 500
+
 def generate_grid_points(state, levels, grid_step=30.0):
     """Generates a grid of UTM coordinates inside the sheet's bounding box."""
     utm_cache_key = f"{state}_{levels}_0"

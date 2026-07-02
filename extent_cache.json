@@ -1,0 +1,650 @@
+{
+  "10_38,01,02,0118,CS,06,02,_4326": {
+    "ymin": 25.11452817553155,
+    "xmin": 84.53334621469914,
+    "ymax": 25.123501247564544,
+    "xmax": 84.54378816376823,
+    "scaleFactor": 1.0,
+    "attribution": "<br /><br /><br /><br /><span style=\"font-size: 15px; text-shadow: -19px 20px 20px #332929; font-family: auto;\">जिला : 38 ARWAL, अनुमंडल : 01 अरवल, अंचल : 02 Kaler, मौजा : 0118 Hirdai Chak(163), Survey Type : Cadastral Survey , Map Instance : CS Map , Sheet No :  02<br /></span>",
+    "gisCode": "CS38010201181630602"
+  },
+  "10_38,01,02,0118,CS,06,02,_0": {
+    "ymin": 2779901.232869892,
+    "xmin": 251290.43084559724,
+    "ymax": 2780893.8893429847,
+    "xmax": 252326.65527176077,
+    "scaleFactor": 1.0,
+    "attribution": "<br /><br /><br /><br /><span style=\"font-size: 15px; text-shadow: -19px 20px 20px #332929; font-family: auto;\">जिला : 38 ARWAL, अनुमंडल : 01 अरवल, अंचल : 02 Kaler, मौजा : 0118 Hirdai Chak(163), Survey Type : Cadastral Survey , Map Instance : CS Map , Sheet No :  02<br /></span>",
+    "gisCode": "CS38010201181630602"
+  },
+  "10_34,01,04,0531,CS,06,01,_4326": {
+    "ymin": 24.69810151973274,
+    "xmin": 84.39103070830335,
+    "ymax": 24.71020238580184,
+    "xmax": 84.41383230585824,
+    "scaleFactor": 1.0,
+    "attribution": "<br /><br /><br /><br /><span style=\"font-size: 15px; text-shadow: -19px 20px 20px #332929; font-family: auto;\">जिला : 34 AURANGABAD, अनुमंडल : 01 औरंगाबाद, अंचल : 04 Deo, मौजा : 0531 Basdiha(885), Survey Type : Cadastral Survey , Map Instance : CS Map , Sheet No :  01<br /></span>",
+    "gisCode": "CS34010405318850601"
+  },
+  "10_34,01,04,0531,CS,06,01,_0": {
+    "ymin": 2734025.385325521,
+    "xmin": 236032.53054295146,
+    "ymax": 2735366.4030218516,
+    "xmax": 238356.7998788187,
+    "scaleFactor": 1.0,
+    "attribution": "<br /><br /><br /><br /><span style=\"font-size: 15px; text-shadow: -19px 20px 20px #332929; font-family: auto;\">जिला : 34 AURANGABAD, अनुमंडल : 01 औरंगाबाद, अंचल : 04 Deo, मौजा : 0531 Basdiha(885), Survey Type : Cadastral Survey , Map Instance : CS Map , Sheet No :  01<br /></span>",
+    "gisCode": "CS34010405318850601"
+  },
+  "10_38,01,01,0043,CS,06,00,_4326": {
+    "ymin": 25.226618637234697,
+    "xmin": 84.70447043391745,
+    "ymax": 25.24635821667622,
+    "xmax": 84.71689450581144,
+    "scaleFactor": 1.0,
+    "attribution": "<br /><br /><br /><br /><span style=\"font-size: 15px; text-shadow: -19px 20px 20px #332929; font-family: auto;\">जिला : 38 ARWAL, अनुमंडल : 01 अरवल, अंचल : 01 Arwal, मौजा : 0043 Gaddopur(34), Survey Type : Cadastral Survey , Map Instance : CS Map , Sheet No :  00<br /></span>",
+    "gisCode": "CS38010100430340600"
+  },
+  "10_38,01,01,0043,CS,06,00,_0": {
+    "ymin": 2792006.3203325924,
+    "xmin": 268760.6045768848,
+    "ymax": 2794189.33115373,
+    "xmax": 270025.2177100245,
+    "scaleFactor": 1.0,
+    "attribution": "<br /><br /><br /><br /><span style=\"font-size: 15px; text-shadow: -19px 20px 20px #332929; font-family: auto;\">जिला : 38 ARWAL, अनुमंडल : 01 अरवल, अंचल : 01 Arwal, मौजा : 0043 Gaddopur(34), Survey Type : Cadastral Survey , Map Instance : CS Map , Sheet No :  00<br /></span>",
+    "gisCode": "CS38010100430340600"
+  },
+  "10_38,01,05,0290,SS,01,00,_4326": {
+    "ymin": 25.130955810373777,
+    "xmin": 84.80564166455736,
+    "ymax": 25.14432573895279,
+    "xmax": 84.82544971110116,
+    "scaleFactor": 1.0,
+    "attribution": "<br /><br /><br /><br /><span style=\"font-size: 15px; text-shadow: -19px 20px 20px #332929; font-family: auto;\">जिला : 38 ARWAL, अनुमंडल : 01 अरवल, अंचल : 05 Kurtha, मौजा : 0290 Gangapur(129), Survey Type : Special Survey , Map Instance : Boundary Verified Map , Sheet No :  00<br /></span>",
+    "gisCode": "SS38010502901290100"
+  },
+  "10_38,01,05,0290,SS,01,00,_0": {
+    "ymin": 2781226.4276898107,
+    "xmin": 278789.0596663069,
+    "ymax": 2782725.897265372,
+    "xmax": 280781.7957555629,
+    "scaleFactor": 1.0,
+    "attribution": "<br /><br /><br /><br /><span style=\"font-size: 15px; text-shadow: -19px 20px 20px #332929; font-family: auto;\">जिला : 38 ARWAL, अनुमंडल : 01 अरवल, अंचल : 05 Kurtha, मौजा : 0290 Gangapur(129), Survey Type : Special Survey , Map Instance : Boundary Verified Map , Sheet No :  00<br /></span>",
+    "gisCode": "SS38010502901290100"
+  },
+  "10_38,01,02,0089,CS,06,01,_4326": {
+    "ymin": 25.153111756558236,
+    "xmin": 84.57504667950091,
+    "ymax": 25.17131441261337,
+    "xmax": 84.58458042733469,
+    "scaleFactor": 1.0,
+    "attribution": "<br /><br /><br /><br /><span style=\"font-size: 15px; text-shadow: -19px 20px 20px #332929; font-family: auto;\">जिला : 38 ARWAL, अनुमंडल : 01 अरवल, अंचल : 02 Kaler, मौजा : 0089 Hardia(134), Survey Type : Cadastral Survey , Map Instance : CS Map , Sheet No :  01<br /></span>",
+    "gisCode": "CS38010200891340601"
+  },
+  "10_38,01,02,0089,CS,06,01,_0": {
+    "ymin": 2784084.0388017916,
+    "xmin": 255581.06814271424,
+    "ymax": 2786101.4378416636,
+    "xmax": 256520.80450185356,
+    "scaleFactor": 1.0,
+    "attribution": "<br /><br /><br /><br /><span style=\"font-size: 15px; text-shadow: -19px 20px 20px #332929; font-family: auto;\">जिला : 38 ARWAL, अनुमंडल : 01 अरवल, अंचल : 02 Kaler, मौजा : 0089 Hardia(134), Survey Type : Cadastral Survey , Map Instance : CS Map , Sheet No :  01<br /></span>",
+    "gisCode": "CS38010200891340601"
+  },
+  "10_34,01,04,0522,CS,06,00,_4326": {
+    "ymin": 24.71316906510531,
+    "xmin": 84.3438525207846,
+    "ymax": 24.724345407058703,
+    "xmax": 84.36391728017975,
+    "scaleFactor": 1.0,
+    "attribution": "<br /><br /><br /><br /><span style=\"font-size: 15px; text-shadow: -19px 20px 20px #332929; font-family: auto;\">जिला : 34 AURANGABAD, अनुमंडल : 01 औरंगाबाद, अंचल : 04 Deo, मौजा : 0522 Basdiha(875), Survey Type : Cadastral Survey , Map Instance : CS Map , Sheet No :  00<br /></span>",
+    "gisCode": "CS34010405228750600"
+  },
+  "10_34,01,04,0522,CS,06,00,_0": {
+    "ymin": 2735766.4137899913,
+    "xmin": 231299.5930179256,
+    "ymax": 2736999.573629992,
+    "xmax": 233338.6801779256,
+    "scaleFactor": 1.0,
+    "attribution": "<br /><br /><br /><br /><span style=\"font-size: 15px; text-shadow: -19px 20px 20px #332929; font-family: auto;\">जिला : 34 AURANGABAD, अनुमंडल : 01 औरंगाबाद, अंचल : 04 Deo, मौजा : 0522 Basdiha(875), Survey Type : Cadastral Survey , Map Instance : CS Map , Sheet No :  00<br /></span>",
+    "gisCode": "CS34010405228750600"
+  },
+  "10_34,01,02,0331,CS,06,00,_4326": {
+    "ymin": null,
+    "xmin": null,
+    "ymax": null,
+    "xmax": null,
+    "scaleFactor": 1.0,
+    "attribution": "<br /><br /><br /><br /><span style=\"font-size: 15px; text-shadow: -19px 20px 20px #332929; font-family: auto;\">जिला : 34 AURANGABAD, अनुमंडल : 01 औरंगाबाद, अंचल : 02 Barun, मौजा : 0331 Balkarna(49), Survey Type : Cadastral Survey , Map Instance : CS Map , Sheet No :  00<br /></span>",
+    "gisCode": "CS34010203310490600"
+  },
+  "10_20,02,08,0548,SS,01,00,_4326": {
+    "ymin": 25.50324086153007,
+    "xmin": 86.28822318525492,
+    "ymax": 25.511377523925884,
+    "xmax": 86.29877254365594,
+    "scaleFactor": 1.0,
+    "attribution": "<br /><br /><br /><br /><span style=\"font-size: 15px; text-shadow: -19px 20px 20px #332929; font-family: auto;\">जिला : 20 BEGUSARAI, अनुमंडल : 02 बलिया, अंचल : 08 Dandari, मौजा : 0548 Chak Pathra(292), Survey Type : Special Survey , Map Instance : Boundary Verified Map , Sheet No :  00<br /></span>",
+    "gisCode": "SS20020805482920100"
+  },
+  "10_20,02,08,0548,SS,01,00,_0": {
+    "ymin": 2820861.105530771,
+    "xmin": 428470.078143782,
+    "ymax": 2821763.05924549,
+    "xmax": 429532.7325260588,
+    "scaleFactor": 1.0,
+    "attribution": "<br /><br /><br /><br /><span style=\"font-size: 15px; text-shadow: -19px 20px 20px #332929; font-family: auto;\">जिला : 20 BEGUSARAI, अनुमंडल : 02 बलिया, अंचल : 08 Dandari, मौजा : 0548 Chak Pathra(292), Survey Type : Special Survey , Map Instance : Boundary Verified Map , Sheet No :  00<br /></span>",
+    "gisCode": "SS20020805482920100"
+  },
+  "10_13,03,15,1180,CS,06,02,_4326": {
+    "ymin": null,
+    "xmin": null,
+    "ymax": null,
+    "xmax": null,
+    "scaleFactor": 1.0,
+    "attribution": "<br /><br /><br /><br /><span style=\"font-size: 15px; text-shadow: -19px 20px 20px #332929; font-family: auto;\">जिला : 13 DARBHANGA, अनुमंडल : 03 विरौल, अंचल : 15 Gora Bauram, मौजा : 1180 Bauram(413), Survey Type : Cadastral Survey , Map Instance : CS Map , Sheet No :  02<br /></span>",
+    "gisCode": "CS13031511804130602"
+  },
+  "10_38,01,05,0294,SS,02,01,_4326": {
+    "ymin": 25.10951172616821,
+    "xmin": 84.82967935159343,
+    "ymax": 25.12084462255612,
+    "xmax": 84.83592767001082,
+    "scaleFactor": 1.0,
+    "attribution": "<br /><br /><br /><br /><span style=\"font-size: 15px; text-shadow: -19px 20px 20px #332929; font-family: auto;\">जिला : 38 ARWAL, अनुमंडल : 01 अरवल, अंचल : 05 Kurtha, मौजा : 0294 Gokhulpur(133), Survey Type : Special Survey , Map Instance : Khanapuri Updated Map , Sheet No :  01<br /></span>",
+    "gisCode": "SS38010502941330201"
+  },
+  "10_38,01,05,0294,SS,02,01,_0": {
+    "ymin": 2778826.025660522,
+    "xmin": 281161.2082308116,
+    "ymax": 2780080.099466787,
+    "xmax": 281803.7992323065,
+    "scaleFactor": 1.0,
+    "attribution": "<br /><br /><br /><br /><span style=\"font-size: 15px; text-shadow: -19px 20px 20px #332929; font-family: auto;\">जिला : 38 ARWAL, अनुमंडल : 01 अरवल, अंचल : 05 Kurtha, मौजा : 0294 Gokhulpur(133), Survey Type : Special Survey , Map Instance : Khanapuri Updated Map , Sheet No :  01<br /></span>",
+    "gisCode": "SS38010502941330201"
+  },
+  "10_34,01,04,0601,CS,06,00,_4326": {
+    "ymin": 24.553583798764123,
+    "xmin": 84.3891149822531,
+    "ymax": 24.563073477134147,
+    "xmax": 84.39593513944105,
+    "scaleFactor": 1.0,
+    "attribution": "<br /><br /><br /><br /><span style=\"font-size: 15px; text-shadow: -19px 20px 20px #332929; font-family: auto;\">जिला : 34 AURANGABAD, अनुमंडल : 01 औरंगाबाद, अंचल : 04 Deo, मौजा : 0601 Bara(959), Survey Type : Cadastral Survey , Map Instance : CS Map , Sheet No :  00<br /></span>",
+    "gisCode": "CS34010406019590600"
+  },
+  "10_34,01,04,0601,CS,06,00,_0": {
+    "ymin": 2718012.7294289954,
+    "xmin": 235535.79873709017,
+    "ymax": 2719070.574125506,
+    "xmax": 236227.759073124,
+    "scaleFactor": 1.0,
+    "attribution": "<br /><br /><br /><br /><span style=\"font-size: 15px; text-shadow: -19px 20px 20px #332929; font-family: auto;\">जिला : 34 AURANGABAD, अनुमंडल : 01 औरंगाबाद, अंचल : 04 Deo, मौजा : 0601 Bara(959), Survey Type : Cadastral Survey , Map Instance : CS Map , Sheet No :  00<br /></span>",
+    "gisCode": "CS34010406019590600"
+  },
+  "10_34,01,04,0577,CS,06,00,_4326": {
+    "ymin": 24.58308200227737,
+    "xmin": 84.39254701183589,
+    "ymax": 24.597374860890465,
+    "xmax": 84.39969348814458,
+    "scaleFactor": 1.0,
+    "attribution": "<br /><br /><br /><br /><span style=\"font-size: 15px; text-shadow: -19px 20px 20px #332929; font-family: auto;\">जिला : 34 AURANGABAD, अनुमंडल : 01 औरंगाबाद, अंचल : 04 Deo, मौजा : 0577 Basri(935), Survey Type : Cadastral Survey , Map Instance : CS Map , Sheet No :  00<br /></span>",
+    "gisCode": "CS34010405779350600"
+  },
+  "10_38,01,03,0216,CS,06,02,_4326": {
+    "ymin": 25.203949437818622,
+    "xmin": 84.6885679538784,
+    "ymax": 25.210018657400227,
+    "xmax": 84.69590477171732,
+    "scaleFactor": 1.0,
+    "attribution": "<br /><br /><br /><br /><span style=\"font-size: 15px; text-shadow: -19px 20px 20px #332929; font-family: auto;\">जिला : 38 ARWAL, अनुमंडल : 01 अरवल, अंचल : 03 Karpi, मौजा : 0216 Bakhtari(73), Survey Type : Cadastral Survey , Map Instance : CS Map , Sheet No :  02<br /></span>",
+    "gisCode": "CS38010302160730602"
+  },
+  "10_38,01,03,0216,CS,06,02,_0": {
+    "ymin": 2789532.272150445,
+    "xmin": 267104.26893580065,
+    "ymax": 2790202.4980720785,
+    "xmax": 267847.9372166371,
+    "scaleFactor": 1.0,
+    "attribution": "<br /><br /><br /><br /><span style=\"font-size: 15px; text-shadow: -19px 20px 20px #332929; font-family: auto;\">जिला : 38 ARWAL, अनुमंडल : 01 अरवल, अंचल : 03 Karpi, मौजा : 0216 Bakhtari(73), Survey Type : Cadastral Survey , Map Instance : CS Map , Sheet No :  02<br /></span>",
+    "gisCode": "CS38010302160730602"
+  },
+  "10_20,03,10,0649,SS,01,00,_4326": {
+    "ymin": 25.696169127703293,
+    "xmin": 86.11904630078455,
+    "ymax": 25.71841554624492,
+    "xmax": 86.14248490603511,
+    "scaleFactor": 1.0,
+    "attribution": "<br /><br /><br /><br /><span style=\"font-size: 15px; text-shadow: -19px 20px 20px #332929; font-family: auto;\">जिला : 20 BEGUSARAI, अनुमंडल : 03 बखरी, अंचल : 10 Garhpura, मौजा : 0649 Jagarnathpur(42), Survey Type : Special Survey , Map Instance : Boundary Verified Map , Sheet No :  00<br /></span>",
+    "gisCode": "SS20031006490420100"
+  },
+  "10_20,03,10,0649,SS,01,00,_0": {
+    "ymin": 2842317.041633998,
+    "xmin": 411619.89377324976,
+    "ymax": 2844784.5462178583,
+    "xmax": 413963.615662015,
+    "scaleFactor": 1.0,
+    "attribution": "<br /><br /><br /><br /><span style=\"font-size: 15px; text-shadow: -19px 20px 20px #332929; font-family: auto;\">जिला : 20 BEGUSARAI, अनुमंडल : 03 बखरी, अंचल : 10 Garhpura, मौजा : 0649 Jagarnathpur(42), Survey Type : Special Survey , Map Instance : Boundary Verified Map , Sheet No :  00<br /></span>",
+    "gisCode": "SS20031006490420100"
+  },
+  "10_07,01,07,0547,CS,06,00,_4326": {
+    "ymin": 26.130943059162213,
+    "xmin": 87.2079733560351,
+    "ymax": 26.137052252334822,
+    "xmax": 87.21918656948695,
+    "scaleFactor": 1.0,
+    "attribution": "<br /><br /><br /><br /><span style=\"font-size: 15px; text-shadow: -19px 20px 20px #332929; font-family: auto;\">जिला : 07 ARARIA, अनुमंडल : 01 अररिया, अंचल : 07 Raniganj, मौजा : 0547 Bhagphasia(1), Survey Type : Cadastral Survey , Map Instance : CS Map , Sheet No :  00<br /></span>",
+    "gisCode": "CS07010705470010600"
+  },
+  "10_07,01,07,0547,CS,06,00,_0": {
+    "ymin": 2890202.083013397,
+    "xmin": 520789.4575555301,
+    "ymax": 2890878.9156650994,
+    "xmax": 521910.93665738055,
+    "scaleFactor": 1.0,
+    "attribution": "<br /><br /><br /><br /><span style=\"font-size: 15px; text-shadow: -19px 20px 20px #332929; font-family: auto;\">जिला : 07 ARARIA, अनुमंडल : 01 अररिया, अंचल : 07 Raniganj, मौजा : 0547 Bhagphasia(1), Survey Type : Cadastral Survey , Map Instance : CS Map , Sheet No :  00<br /></span>",
+    "gisCode": "CS07010705470010600"
+  },
+  "10_20,02,08,0539,SS,01,00,_4326": {
+    "ymin": 25.525267158751547,
+    "xmin": 86.25326471175443,
+    "ymax": 25.531952206593637,
+    "xmax": 86.26050141724082,
+    "scaleFactor": 1.0,
+    "attribution": "<br /><br /><br /><br /><span style=\"font-size: 15px; text-shadow: -19px 20px 20px #332929; font-family: auto;\">जिला : 20 BEGUSARAI, अनुमंडल : 02 बलिया, अंचल : 08 Dandari, मौजा : 0539 Kodra(250), Survey Type : Special Survey , Map Instance : Boundary Verified Map , Sheet No :  00<br /></span>",
+    "gisCode": "SS20020805392500100"
+  },
+  "10_20,02,08,0539,SS,01,00,_0": {
+    "ymin": 2823320.6520385346,
+    "xmin": 424972.833069204,
+    "ymax": 2824061.2404722697,
+    "xmax": 425700.3686234132,
+    "scaleFactor": 1.0,
+    "attribution": "<br /><br /><br /><br /><span style=\"font-size: 15px; text-shadow: -19px 20px 20px #332929; font-family: auto;\">जिला : 20 BEGUSARAI, अनुमंडल : 02 बलिया, अंचल : 08 Dandari, मौजा : 0539 Kodra(250), Survey Type : Special Survey , Map Instance : Boundary Verified Map , Sheet No :  00<br /></span>",
+    "gisCode": "SS20020805392500100"
+  },
+  "10_20,02,08,0561,SS,01,00,_4326": {
+    "ymin": 25.455648138294066,
+    "xmin": 86.31615535860912,
+    "ymax": 25.50052498450152,
+    "xmax": 86.37569711705663,
+    "scaleFactor": 1.0,
+    "attribution": "<br /><br /><br /><br /><span style=\"font-size: 15px; text-shadow: -19px 20px 20px #332929; font-family: auto;\">जिला : 20 BEGUSARAI, अनुमंडल : 02 बलिया, अंचल : 08 Dandari, मौजा : 0561 Mehpatol(630), Survey Type : Special Survey , Map Instance : Boundary Verified Map , Sheet No :  00<br /></span>",
+    "gisCode": "SS20020805616300100"
+  },
+  "10_20,02,08,0561,SS,01,00,_0": {
+    "ymin": 2815574.7325363867,
+    "xmin": 431256.14061900065,
+    "ymax": 2820526.606485745,
+    "xmax": 437252.1284143314,
+    "scaleFactor": 1.0,
+    "attribution": "<br /><br /><br /><br /><span style=\"font-size: 15px; text-shadow: -19px 20px 20px #332929; font-family: auto;\">जिला : 20 BEGUSARAI, अनुमंडल : 02 बलिया, अंचल : 08 Dandari, मौजा : 0561 Mehpatol(630), Survey Type : Special Survey , Map Instance : Boundary Verified Map , Sheet No :  00<br /></span>",
+    "gisCode": "SS20020805616300100"
+  },
+  "10_07,01,01,0050,CS,06,01,_4326": {
+    "ymin": 26.179153170432553,
+    "xmin": 87.52154343513918,
+    "ymax": 26.194158056941713,
+    "xmax": 87.5446952764928,
+    "scaleFactor": 1.0,
+    "attribution": "<br /><br /><br /><br /><span style=\"font-size: 15px; text-shadow: -19px 20px 20px #332929; font-family: auto;\">जिला : 07 ARARIA, अनुमंडल : 01 अररिया, अंचल : 01 Araria, मौजा : 0050 Azmatpur(215/1), Survey Type : Cadastral Survey , Map Instance : CS Map , Sheet No :  01<br /></span>",
+    "gisCode": "CS0701010050215/10601"
+  },
+  "10_07,01,01,0050,CS,06,00,_4326": {
+    "ymin": 26.13138582214145,
+    "xmin": 87.48843105696717,
+    "ymax": 26.14183613906756,
+    "xmax": 87.50773629770721,
+    "scaleFactor": 1.0,
+    "attribution": "<br /><br /><br /><br /><span style=\"font-size: 15px; text-shadow: -19px 20px 20px #332929; font-family: auto;\">जिला : 07 ARARIA, अनुमंडल : 01 अररिया, अंचल : 01 Araria, मौजा : 0050 Azmatpur(215/1), Survey Type : Cadastral Survey , Map Instance : CS Map , Sheet No :  00<br /></span>",
+    "gisCode": "CS0701010050215/10600"
+  },
+  "10_07,01,01,0050,CS,06,00,_0": {
+    "ymin": 2890329.9998828196,
+    "xmin": 548824.1554549887,
+    "ymax": 2891489.658874501,
+    "xmax": 550753.3632373634,
+    "scaleFactor": 1.0,
+    "attribution": "<br /><br /><br /><br /><span style=\"font-size: 15px; text-shadow: -19px 20px 20px #332929; font-family: auto;\">जिला : 07 ARARIA, अनुमंडल : 01 अररिया, अंचल : 01 Araria, मौजा : 0050 Azmatpur(215/1), Survey Type : Cadastral Survey , Map Instance : CS Map , Sheet No :  00<br /></span>",
+    "gisCode": "CS0701010050215/10600"
+  },
+  "10_38,01,01,0002,SS,01,00,_4326": {
+    "ymin": 25.288989367615297,
+    "xmin": 84.71460645058814,
+    "ymax": 25.298016226867087,
+    "xmax": 84.72665735212173,
+    "scaleFactor": 1.0,
+    "attribution": "<br /><br /><br /><br /><span style=\"font-size: 15px; text-shadow: -19px 20px 20px #332929; font-family: auto;\">जिला : 38 ARWAL, अनुमंडल : 01 अरवल, अंचल : 01 Arwal, मौजा : 0002 Bara(02), Survey Type : Special Survey , Map Instance : Boundary Verified Map , Sheet No :  00<br /></span>",
+    "gisCode": "SS38010100020020100"
+  },
+  "10_38,01,01,0002,SS,01,00,_0": {
+    "ymin": 2798908.879487447,
+    "xmin": 269884.9346570289,
+    "ymax": 2799894.693239711,
+    "xmax": 271109.9681024199,
+    "scaleFactor": 1.0,
+    "attribution": "<br /><br /><br /><br /><span style=\"font-size: 15px; text-shadow: -19px 20px 20px #332929; font-family: auto;\">जिला : 38 ARWAL, अनुमंडल : 01 अरवल, अंचल : 01 Arwal, मौजा : 0002 Bara(02), Survey Type : Special Survey , Map Instance : Boundary Verified Map , Sheet No :  00<br /></span>",
+    "gisCode": "SS38010100020020100"
+  },
+  "10_07,01,01,0050,CS,06,01,_0": {
+    "ymin": 2895635.3574366937,
+    "xmin": 552115.3466361949,
+    "ymax": 2897291.6646862305,
+    "xmax": 554428.8736981131,
+    "scaleFactor": 1.0,
+    "attribution": "<br /><br /><br /><br /><span style=\"font-size: 15px; text-shadow: -19px 20px 20px #332929; font-family: auto;\">जिला : 07 ARARIA, अनुमंडल : 01 अररिया, अंचल : 01 Araria, मौजा : 0050 Azmatpur(215/1), Survey Type : Cadastral Survey , Map Instance : CS Map , Sheet No :  01<br /></span>",
+    "gisCode": "CS0701010050215/10601"
+  },
+  "10_07,02,09,0723,CS,06,00,_4326": {
+    "ymin": null,
+    "xmin": null,
+    "ymax": null,
+    "xmax": null,
+    "scaleFactor": 1.0,
+    "attribution": "<br /><br /><br /><br /><span style=\"font-size: 15px; text-shadow: -19px 20px 20px #332929; font-family: auto;\">जिला : 07 ARARIA, अनुमंडल : 02 फारबिसगंज, अंचल : 09 Bhargama, मौजा : 0723 Bisaria Patti(118/2), Survey Type : Cadastral Survey , Map Instance : CS Map , Sheet No :  00<br /></span>",
+    "gisCode": "CS0702090723118/20600"
+  },
+  "10_23,01,05,0548,CS,06,00,_4326": {
+    "ymin": 24.962338969020834,
+    "xmin": 86.62425940815629,
+    "ymax": 24.967786355843046,
+    "xmax": 86.63111975726137,
+    "scaleFactor": 1.0,
+    "attribution": "<br /><br /><br /><br /><span style=\"font-size: 15px; text-shadow: -19px 20px 20px #332929; font-family: auto;\">जिला : 23 BANKA, अनुमंडल : 01 बाँका, अंचल : 05 Belhar, मौजा : 0548 Chakwara(29), Survey Type : Cadastral Survey , Map Instance : CS Map , Sheet No :  00<br /></span>",
+    "gisCode": "CS23010505480290600"
+  },
+  "10_23,01,05,0548,CS,06,00,_0": {
+    "ymin": 2760829.013624245,
+    "xmin": 462073.12387400644,
+    "ymax": 2761432.9665350574,
+    "xmax": 462765.84444671765,
+    "scaleFactor": 1.0,
+    "attribution": "<br /><br /><br /><br /><span style=\"font-size: 15px; text-shadow: -19px 20px 20px #332929; font-family: auto;\">जिला : 23 BANKA, अनुमंडल : 01 बाँका, अंचल : 05 Belhar, मौजा : 0548 Chakwara(29), Survey Type : Cadastral Survey , Map Instance : CS Map , Sheet No :  00<br /></span>",
+    "gisCode": "CS23010505480290600"
+  },
+  "10_38,01,02,0086,CS,06,00,_4326": {
+    "ymin": 25.183345714805814,
+    "xmin": 84.55595190537827,
+    "ymax": 25.191496491787337,
+    "xmax": 84.56320575157358,
+    "scaleFactor": 1.0,
+    "attribution": "<br /><br /><br /><br /><span style=\"font-size: 15px; text-shadow: -19px 20px 20px #332929; font-family: auto;\">जिला : 38 ARWAL, अनुमंडल : 01 अरवल, अंचल : 02 Kaler, मौजा : 0086 Gorkatta(131), Survey Type : Cadastral Survey , Map Instance : CS Map , Sheet No :  00<br /></span>",
+    "gisCode": "CS38010200861310600"
+  },
+  "10_38,01,02,0086,CS,06,00,_0": {
+    "ymin": 2787477.960767899,
+    "xmin": 253694.87872447615,
+    "ymax": 2788386.4407629375,
+    "xmax": 254432.98830404325,
+    "scaleFactor": 1.0,
+    "attribution": "<br /><br /><br /><br /><span style=\"font-size: 15px; text-shadow: -19px 20px 20px #332929; font-family: auto;\">जिला : 38 ARWAL, अनुमंडल : 01 अरवल, अंचल : 02 Kaler, मौजा : 0086 Gorkatta(131), Survey Type : Cadastral Survey , Map Instance : CS Map , Sheet No :  00<br /></span>",
+    "gisCode": "CS38010200861310600"
+  },
+  "10_38,01,03,0136,CS,06,00,_4326": {
+    "ymin": 25.140157846923202,
+    "xmin": 84.66791258038171,
+    "ymax": 25.151189747762537,
+    "xmax": 84.67895225727052,
+    "scaleFactor": 1.0,
+    "attribution": "<br /><br /><br /><br /><span style=\"font-size: 15px; text-shadow: -19px 20px 20px #332929; font-family: auto;\">जिला : 38 ARWAL, अनुमंडल : 01 अरवल, अंचल : 03 Karpi, मौजा : 0136 Chauhar Chak(108), Survey Type : Cadastral Survey , Map Instance : CS Map , Sheet No :  00<br /></span>",
+    "gisCode": "CS38010301361080600"
+  },
+  "10_38,01,03,0136,CS,06,00,_0": {
+    "ymin": 2782482.1989335995,
+    "xmin": 264903.122720144,
+    "ymax": 2783716.8145688325,
+    "xmax": 266012.11315221095,
+    "scaleFactor": 1.0,
+    "attribution": "<br /><br /><br /><br /><span style=\"font-size: 15px; text-shadow: -19px 20px 20px #332929; font-family: auto;\">जिला : 38 ARWAL, अनुमंडल : 01 अरवल, अंचल : 03 Karpi, मौजा : 0136 Chauhar Chak(108), Survey Type : Cadastral Survey , Map Instance : CS Map , Sheet No :  00<br /></span>",
+    "gisCode": "CS38010301361080600"
+  },
+  "10_23,01,02,0278,CS,06,00,_4326": {
+    "ymin": 24.897347282907422,
+    "xmin": 86.92472587435009,
+    "ymax": 24.912988618533415,
+    "xmax": 86.94042960531027,
+    "scaleFactor": 1.0,
+    "attribution": "<br /><br /><br /><br /><span style=\"font-size: 15px; text-shadow: -19px 20px 20px #332929; font-family: auto;\">जिला : 23 BANKA, अनुमंडल : 01 बाँका, अंचल : 02 Banka, मौजा : 0278 Bishunpur(90), Survey Type : Cadastral Survey , Map Instance : CS Map , Sheet No :  00<br /></span>",
+    "gisCode": "CS23010202780900600"
+  },
+  "10_23,01,02,0278,CS,06,00,_0": {
+    "ymin": 2753583.07890968,
+    "xmin": 492398.6116811636,
+    "ymax": 2755314.527769338,
+    "xmax": 493984.19305039087,
+    "scaleFactor": 1.0,
+    "attribution": "<br /><br /><br /><br /><span style=\"font-size: 15px; text-shadow: -19px 20px 20px #332929; font-family: auto;\">जिला : 23 BANKA, अनुमंडल : 01 बाँका, अंचल : 02 Banka, मौजा : 0278 Bishunpur(90), Survey Type : Cadastral Survey , Map Instance : CS Map , Sheet No :  00<br /></span>",
+    "gisCode": "CS23010202780900600"
+  },
+  "10_34,01,01,0088,CS,06,00,_4326": {
+    "ymin": null,
+    "xmin": null,
+    "ymax": null,
+    "xmax": null,
+    "scaleFactor": 1.0,
+    "attribution": "<br /><br /><br /><br /><span style=\"font-size: 15px; text-shadow: -19px 20px 20px #332929; font-family: auto;\">जिला : 34 AURANGABAD, अनुमंडल : 01 औरंगाबाद, अंचल : 01 Aurangabad, मौजा : 0088 Bansikhap(551), Survey Type : Cadastral Survey , Map Instance : CS Map , Sheet No :  00<br /></span>",
+    "gisCode": "CS34010100885510600"
+  },
+  "10_34,02,11,1876,CS,06,00,_4326": {
+    "ymin": 24.909218223044263,
+    "xmin": 84.67715016110348,
+    "ymax": 24.92723295599799,
+    "xmax": 84.69084450622599,
+    "scaleFactor": 1.0,
+    "attribution": "<br /><br /><br /><br /><span style=\"font-size: 15px; text-shadow: -19px 20px 20px #332929; font-family: auto;\">जिला : 34 AURANGABAD, अनुमंडल : 02 दाउदनगर, अंचल : 11 Goh, मौजा : 1876 Bandea(307), Survey Type : Cadastral Survey , Map Instance : CS Map , Sheet No :  00<br /></span>",
+    "gisCode": "CS34021118763070600"
+  },
+  "10_34,02,11,1876,CS,06,00,_0": {
+    "ymin": 2756878.9784016856,
+    "xmin": 265413.5275760751,
+    "ymax": 2758879.8190294118,
+    "xmax": 266794.4499024171,
+    "scaleFactor": 1.0,
+    "attribution": "<br /><br /><br /><br /><span style=\"font-size: 15px; text-shadow: -19px 20px 20px #332929; font-family: auto;\">जिला : 34 AURANGABAD, अनुमंडल : 02 दाउदनगर, अंचल : 11 Goh, मौजा : 1876 Bandea(307), Survey Type : Cadastral Survey , Map Instance : CS Map , Sheet No :  00<br /></span>",
+    "gisCode": "CS34021118763070600"
+  },
+  "10_23,01,02,0198,CS,06,00,_4326": {
+    "ymin": 24.796541344141886,
+    "xmin": 86.91702485021364,
+    "ymax": 24.798693361352715,
+    "xmax": 86.92049644130029,
+    "scaleFactor": 1.0,
+    "attribution": "<br /><br /><br /><br /><span style=\"font-size: 15px; text-shadow: -19px 20px 20px #332929; font-family: auto;\">जिला : 23 BANKA, अनुमंडल : 01 बाँका, अंचल : 02 Banka, मौजा : 0198 Burhsaili(18), Survey Type : Cadastral Survey , Map Instance : CS Map , Sheet No :  00<br /></span>",
+    "gisCode": "CS23010201980180600"
+  },
+  "10_23,01,02,0198,CS,06,00,_0": {
+    "ymin": 2742421.720191934,
+    "xmin": 491613.3918149084,
+    "ymax": 2742659.989228674,
+    "xmax": 491964.2950543197,
+    "scaleFactor": 1.0,
+    "attribution": "<br /><br /><br /><br /><span style=\"font-size: 15px; text-shadow: -19px 20px 20px #332929; font-family: auto;\">जिला : 23 BANKA, अनुमंडल : 01 बाँका, अंचल : 02 Banka, मौजा : 0198 Burhsaili(18), Survey Type : Cadastral Survey , Map Instance : CS Map , Sheet No :  00<br /></span>",
+    "gisCode": "CS23010201980180600"
+  },
+  "10_38,01,02,0097,CS,06,00,_4326": {
+    "ymin": 25.15284920616464,
+    "xmin": 84.52490056021283,
+    "ymax": 25.1752866482666,
+    "xmax": 84.53995547727959,
+    "scaleFactor": 1.0,
+    "attribution": "<br /><br /><br /><br /><span style=\"font-size: 15px; text-shadow: -19px 20px 20px #332929; font-family: auto;\">जिला : 38 ARWAL, अनुमंडल : 01 अरवल, अंचल : 02 Kaler, मौजा : 0097 Ismailpur Koil(142), Survey Type : Cadastral Survey , Map Instance : CS Map , Sheet No :  00<br /></span>",
+    "gisCode": "CS38010200971420600"
+  },
+  "10_38,01,02,0097,CS,06,00,_0": {
+    "ymin": 2784147.626082088,
+    "xmin": 250500.5151335312,
+    "ymax": 2786640.9862074414,
+    "xmax": 252029.71544333748,
+    "scaleFactor": 1.0,
+    "attribution": "<br /><br /><br /><br /><span style=\"font-size: 15px; text-shadow: -19px 20px 20px #332929; font-family: auto;\">जिला : 38 ARWAL, अनुमंडल : 01 अरवल, अंचल : 02 Kaler, मौजा : 0097 Ismailpur Koil(142), Survey Type : Cadastral Survey , Map Instance : CS Map , Sheet No :  00<br /></span>",
+    "gisCode": "CS38010200971420600"
+  },
+  "10_07,01,02,0165,CS,06,00,_4326": {
+    "ymin": 26.11535091163938,
+    "xmin": 87.5118821572434,
+    "ymax": 26.12528640150279,
+    "xmax": 87.52935195299462,
+    "scaleFactor": 1.0,
+    "attribution": "<br /><br /><br /><br /><span style=\"font-size: 15px; text-shadow: -19px 20px 20px #332929; font-family: auto;\">जिला : 07 ARARIA, अनुमंडल : 01 अररिया, अंचल : 02 Jokihat, मौजा : 0165 Bhag Turkaili(299), Survey Type : Cadastral Survey , Map Instance : CS Map , Sheet No :  00<br /></span>",
+    "gisCode": "CS07010201652990600"
+  },
+  "10_07,01,02,0165,CS,06,00,_0": {
+    "ymin": 2888564.7744957684,
+    "xmin": 551177.7848791152,
+    "ymax": 2889661.199370793,
+    "xmax": 552921.8985305666,
+    "scaleFactor": 1.0,
+    "attribution": "<br /><br /><br /><br /><span style=\"font-size: 15px; text-shadow: -19px 20px 20px #332929; font-family: auto;\">जिला : 07 ARARIA, अनुमंडल : 01 अररिया, अंचल : 02 Jokihat, मौजा : 0165 Bhag Turkaili(299), Survey Type : Cadastral Survey , Map Instance : CS Map , Sheet No :  00<br /></span>",
+    "gisCode": "CS07010201652990600"
+  },
+  "10_07,01,01,0061,CS,06,01,_4326": {
+    "ymin": 26.11556136151766,
+    "xmin": 87.47435036902921,
+    "ymax": 26.13243121470589,
+    "xmax": 87.49880678132396,
+    "scaleFactor": 1.0,
+    "attribution": "<br /><br /><br /><br /><span style=\"font-size: 15px; text-shadow: -19px 20px 20px #332929; font-family: auto;\">जिला : 07 ARARIA, अनुमंडल : 01 अररिया, अंचल : 01 Araria, मौजा : 0061 Belwa(297), Survey Type : Cadastral Survey , Map Instance : CS Map , Sheet No :  01<br /></span>",
+    "gisCode": "CS07010100612970601"
+  },
+  "10_07,01,01,0061,CS,06,01,_0": {
+    "ymin": 2888573.353115745,
+    "xmin": 547421.9602806193,
+    "ymax": 2890436.9669711962,
+    "xmax": 549869.9034214893,
+    "scaleFactor": 1.0,
+    "attribution": "<br /><br /><br /><br /><span style=\"font-size: 15px; text-shadow: -19px 20px 20px #332929; font-family: auto;\">जिला : 07 ARARIA, अनुमंडल : 01 अररिया, अंचल : 01 Araria, मौजा : 0061 Belwa(297), Survey Type : Cadastral Survey , Map Instance : CS Map , Sheet No :  01<br /></span>",
+    "gisCode": "CS07010100612970601"
+  },
+  "10_38,01,02,0078,CS,06,00,_4326": {
+    "ymin": 25.15776007687985,
+    "xmin": 84.5922560694758,
+    "ymax": 25.169691095788572,
+    "xmax": 84.59823327856459,
+    "scaleFactor": 1.0,
+    "attribution": "<br /><br /><br /><br /><span style=\"font-size: 15px; text-shadow: -19px 20px 20px #332929; font-family: auto;\">जिला : 38 ARWAL, अनुमंडल : 01 अरवल, अंचल : 02 Kaler, मौजा : 0078 Daulatpur Dhawai(117), Survey Type : Cadastral Survey , Map Instance : CS Map , Sheet No :  00<br /></span>",
+    "gisCode": "CS38010200781170600"
+  },
+  "10_38,01,02,0078,CS,06,00,_0": {
+    "ymin": 2784577.0941500342,
+    "xmin": 257309.46381695353,
+    "ymax": 2785896.368010904,
+    "xmax": 257926.76022372866,
+    "scaleFactor": 1.0,
+    "attribution": "<br /><br /><br /><br /><span style=\"font-size: 15px; text-shadow: -19px 20px 20px #332929; font-family: auto;\">जिला : 38 ARWAL, अनुमंडल : 01 अरवल, अंचल : 02 Kaler, मौजा : 0078 Daulatpur Dhawai(117), Survey Type : Cadastral Survey , Map Instance : CS Map , Sheet No :  00<br /></span>",
+    "gisCode": "CS38010200781170600"
+  },
+  "10_07,01,02,0161,CS,06,02,_4326": {
+    "ymin": 26.089429918968733,
+    "xmin": 87.54671175596074,
+    "ymax": 26.104990779512402,
+    "xmax": 87.57037119525695,
+    "scaleFactor": 1.0,
+    "attribution": "<br /><br /><br /><br /><span style=\"font-size: 15px; text-shadow: -19px 20px 20px #332929; font-family: auto;\">जिला : 07 ARARIA, अनुमंडल : 01 अररिया, अंचल : 02 Jokihat, मौजा : 0161 Bhansia(293), Survey Type : Cadastral Survey , Map Instance : CS Map , Sheet No :  02<br /></span>",
+    "gisCode": "CS07010201612930602"
+  },
+  "10_07,01,02,0161,CS,06,02,_0": {
+    "ymin": 2885702.626963817,
+    "xmin": 554666.8477437542,
+    "ymax": 2887429.683595932,
+    "xmax": 557034.1640190984,
+    "scaleFactor": 1.0,
+    "attribution": "<br /><br /><br /><br /><span style=\"font-size: 15px; text-shadow: -19px 20px 20px #332929; font-family: auto;\">जिला : 07 ARARIA, अनुमंडल : 01 अररिया, अंचल : 02 Jokihat, मौजा : 0161 Bhansia(293), Survey Type : Cadastral Survey , Map Instance : CS Map , Sheet No :  02<br /></span>",
+    "gisCode": "CS07010201612930602"
+  },
+  "10_38,01,01,0015,CS,06,00,_4326": {
+    "ymin": 25.17607827644801,
+    "xmin": 84.63605219179762,
+    "ymax": 25.186119901822426,
+    "xmax": 84.64659011379776,
+    "scaleFactor": 1.0,
+    "attribution": "<br /><br /><br /><br /><span style=\"font-size: 15px; text-shadow: -19px 20px 20px #332929; font-family: auto;\">जिला : 38 ARWAL, अनुमंडल : 01 अरवल, अंचल : 01 Arwal, मौजा : 0015 Dhoraha(104), Survey Type : Cadastral Survey , Map Instance : CS Map , Sheet No :  00<br /></span>",
+    "gisCode": "CS38010100151040600"
+  },
+  "10_38,01,01,0015,CS,06,00,_0": {
+    "ymin": 2786523.3828023756,
+    "xmin": 261754.52581882535,
+    "ymax": 2787639.071278439,
+    "xmax": 262831.7812634037,
+    "scaleFactor": 1.0,
+    "attribution": "<br /><br /><br /><br /><span style=\"font-size: 15px; text-shadow: -19px 20px 20px #332929; font-family: auto;\">जिला : 38 ARWAL, अनुमंडल : 01 अरवल, अंचल : 01 Arwal, मौजा : 0015 Dhoraha(104), Survey Type : Cadastral Survey , Map Instance : CS Map , Sheet No :  00<br /></span>",
+    "gisCode": "CS38010100151040600"
+  },
+  "10_38,01,03,0200,CS,06,00,_4326": {
+    "ymin": 25.207078346653674,
+    "xmin": 84.7576515071557,
+    "ymax": 25.219520289519437,
+    "xmax": 84.76543084696898,
+    "scaleFactor": 1.0,
+    "attribution": "<br /><br /><br /><br /><span style=\"font-size: 15px; text-shadow: -19px 20px 20px #332929; font-family: auto;\">जिला : 38 ARWAL, अनुमंडल : 01 अरवल, अंचल : 03 Karpi, मौजा : 0200 Angari(57), Survey Type : Cadastral Survey , Map Instance : CS Map , Sheet No :  00<br /></span>",
+    "gisCode": "CS38010302000570600"
+  },
+  "10_38,01,03,0200,CS,06,00,_0": {
+    "ymin": 2789760.709298771,
+    "xmin": 274072.4489776445,
+    "ymax": 2791134.0520636123,
+    "xmax": 274873.3118409407,
+    "scaleFactor": 1.0,
+    "attribution": "<br /><br /><br /><br /><span style=\"font-size: 15px; text-shadow: -19px 20px 20px #332929; font-family: auto;\">जिला : 38 ARWAL, अनुमंडल : 01 अरवल, अंचल : 03 Karpi, मौजा : 0200 Angari(57), Survey Type : Cadastral Survey , Map Instance : CS Map , Sheet No :  00<br /></span>",
+    "gisCode": "CS38010302000570600"
+  },
+  "10_23,01,02,0207,CK,08,00,_4326": {
+    "ymin": null,
+    "xmin": null,
+    "ymax": null,
+    "xmax": null,
+    "scaleFactor": 1.0,
+    "attribution": "<br /><br /><br /><br /><span style=\"font-size: 15px; text-shadow: -19px 20px 20px #332929; font-family: auto;\">जिला : 23 BANKA, अनुमंडल : 01 बाँका, अंचल : 02 Banka, मौजा : 0207 Amba(36), Survey Type : Chakbandi Survey , Map Instance : CK Map , Sheet No :  00<br /></span>",
+    "gisCode": "CK23010202070360800"
+  },
+  "10_23,01,02,0280,CS,06,00,_4326": {
+    "ymin": 0.0007646443320533846,
+    "xmin": 82.51255670321558,
+    "ymax": 0.0044985485580999705,
+    "xmax": 82.51645712284594,
+    "scaleFactor": 1.0,
+    "attribution": "<br /><br /><br /><br /><span style=\"font-size: 15px; text-shadow: -19px 20px 20px #332929; font-family: auto;\">जिला : 23 BANKA, अनुमंडल : 01 बाँका, अंचल : 02 Banka, मौजा : 0280 Asni(92), Survey Type : Cadastral Survey , Map Instance : CS Map , Sheet No :  00<br /></span>",
+    "gisCode": "CS23010202800920600"
+  },
+  "10_07,01,05,0391,CS,06,00,_4326": {
+    "ymin": 26.366407848454426,
+    "xmin": 87.4033350496447,
+    "ymax": 26.38547858286627,
+    "xmax": 87.42514598674,
+    "scaleFactor": 1.0,
+    "attribution": "<br /><br /><br /><br /><span style=\"font-size: 15px; text-shadow: -19px 20px 20px #332929; font-family: auto;\">जिला : 07 ARARIA, अनुमंडल : 01 अररिया, अंचल : 05 Kursakatta, मौजा : 0391 Balchanda(73), Survey Type : Cadastral Survey , Map Instance : CS Map , Sheet No :  00<br /></span>",
+    "gisCode": "CS07010503910730600"
+  },
+  "10_07,01,05,0391,CS,06,00,_0": {
+    "ymin": 2916331.7004022985,
+    "xmin": 540237.2416361793,
+    "ymax": 2918440.5866026743,
+    "xmax": 542408.4664159225,
+    "scaleFactor": 1.0,
+    "attribution": "<br /><br /><br /><br /><span style=\"font-size: 15px; text-shadow: -19px 20px 20px #332929; font-family: auto;\">जिला : 07 ARARIA, अनुमंडल : 01 अररिया, अंचल : 05 Kursakatta, मौजा : 0391 Balchanda(73), Survey Type : Cadastral Survey , Map Instance : CS Map , Sheet No :  00<br /></span>",
+    "gisCode": "CS07010503910730600"
+  },
+  "10_07,01,01,0002,CS,06,00,_4326": {
+    "ymin": 24.832721694368544,
+    "xmin": 84.3516633518779,
+    "ymax": 24.84689922334187,
+    "xmax": 84.36337200104182,
+    "scaleFactor": 1.0,
+    "attribution": "<br /><br /><br /><br /><span style=\"font-size: 15px; text-shadow: -19px 20px 20px #332929; font-family: auto;\">जिला : 07 ARARIA, अनुमंडल : 01 अररिया, अंचल : 01 Araria, मौजा : 0002 Bahgi(152), Survey Type : Cadastral Survey , Map Instance : CS Map , Sheet No :  00<br /></span>",
+    "gisCode": "CS07010100021520600"
+  },
+  "10_07,01,01,0002,CS,06,00,_0": {
+    "ymin": 2749003.6513449326,
+    "xmin": 232353.97666529435,
+    "ymax": 2750576.2742649317,
+    "xmax": 233547.43275329444,
+    "scaleFactor": 1.0,
+    "attribution": "<br /><br /><br /><br /><span style=\"font-size: 15px; text-shadow: -19px 20px 20px #332929; font-family: auto;\">जिला : 07 ARARIA, अनुमंडल : 01 अररिया, अंचल : 01 Araria, मौजा : 0002 Bahgi(152), Survey Type : Cadastral Survey , Map Instance : CS Map , Sheet No :  00<br /></span>",
+    "gisCode": "CS07010100021520600"
+  },
+  "10_07,01,01,0050,CS,06,02,_4326": {
+    "ymin": 26.16669114809198,
+    "xmin": 87.52130891718382,
+    "ymax": 26.17922064723676,
+    "xmax": 87.54490803196724,
+    "scaleFactor": 1.0,
+    "attribution": "<br /><br /><br /><br /><span style=\"font-size: 15px; text-shadow: -19px 20px 20px #332929; font-family: auto;\">जिला : 07 ARARIA, अनुमंडल : 01 अररिया, अंचल : 01 Araria, मौजा : 0050 Azmatpur(215/1), Survey Type : Cadastral Survey , Map Instance : CS Map , Sheet No :  02<br /></span>",
+    "gisCode": "CS0701010050215/10602"
+  }
+}

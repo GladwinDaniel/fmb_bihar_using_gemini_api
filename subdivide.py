@@ -68,9 +68,10 @@ def split_polygon_by_ratio(poly, target_ratio, angle_deg):
         # Attempt to split
         try:
             geometry_collection = split(poly_shifted, cut_line)
-        except Exception:
+        except Exception as e:
              # In case of robustness issues (e.g. invalid intersection)
-            continue
+             print("Split error inside binary search:", e)
+             continue
             
         polygons = [geom for geom in geometry_collection.geoms if isinstance(geom, Polygon)]
         

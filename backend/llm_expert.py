@@ -1,182 +1,225 @@
-import os
+"""
+llm_expert.py -- Multi-provider LLM router
+==========================================
+Supports three LLM backends, selected via the LLM_PROVIDER environment variable:
+
+  LLM_PROVIDER=gemini   (default) -- Google Gemini REST API
+  LLM_PROVIDER=grok                -- xAI Grok REST API
+  LLM_PROVIDER=local               -- Any local OpenAI-compatible server (LM Studio, Ollama, etc.)
+
+Provider-specific environment variables
+----------------------------------------
+Gemini:
+  GEMINI_API_KEY   -- required
+  GEMINI_MODEL     -- optional, default: gemini-2.5-flash
+
+Grok:
+  GROK_API_KEY     -- required
+  GROK_MODEL       -- optional, default: grok-2-latest
+  GROK_API_URL     -- optional, default: https://api.x.ai/v1/chat/completions
+
+Local (LM Studio / Ollama):
+  LLM_API_URL      -- optional, default: http://localhost:1234/v1/chat/completions
+  LLM_MODEL_NAME   -- optional, default: local-model
+
+See .env.example in the project root for a ready-to-copy configuration template.
+"""
+
 import json
-import requests
+import os
 import re
 
+import requests
+
+# ---------------------------------------------------------------------------
+# Load .env file if present (python-dotenv is optional)
+# ---------------------------------------------------------------------------
 try:
     from dotenv import load_dotenv
-    load_dotenv()
+    load_dotenv()          # reads backend/.env if it exists
+    load_dotenv(dotenv_path=os.path.join(os.path.dirname(__file__), "..", ".env"))
 except ImportError:
-    pass
+    pass  # python-dotenv not installed; use system env vars instead
 
-LLM_PROVIDER = os.environ.get("LLM_PROVIDER", "gemini").strip().lower()
-GEMINI_MODEL = os.environ.get("GEMINI_MODEL", "gemini-2.5-flash")
-GROK_MODEL = os.environ.get("GROK_MODEL", "grok-2-latest")
+# ---------------------------------------------------------------------------
+# Provider selection
+# ---------------------------------------------------------------------------
+LLM_PROVIDER = os.environ.get("LLM_PROVIDER", "gemini").lower().strip()
+
+# Gemini settings
+GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY", "")
+GEMINI_MODEL   = os.environ.get("GEMINI_MODEL",   "gemini-2.5-flash")
+GEMINI_API_URL = (
+    f"https://generativelanguage.googleapis.com/v1beta/models/"
+    f"{GEMINI_MODEL}:generateContent?key={GEMINI_API_KEY}"
+)
+
+# Grok settings
+GROK_API_KEY = os.environ.get("GROK_API_KEY", "")
+GROK_MODEL   = os.environ.get("GROK_MODEL",   "grok-2-latest")
 GROK_API_URL = os.environ.get("GROK_API_URL", "https://api.x.ai/v1/chat/completions")
 
-
-def _extract_json_object(text):
-    """Extract first JSON object from model text (handles markdown fences/wrappers)."""
-    if not text:
-        return None
-
-    candidate = text.strip()
-
-    if candidate.startswith("```"):
-        candidate = re.sub(r"^```[a-zA-Z]*\s*", "", candidate)
-        candidate = re.sub(r"\s*```$", "", candidate)
-
-    try:
-        return json.loads(candidate)
-    except Exception:
-        pass
-
-    start = candidate.find("{")
-    end = candidate.rfind("}")
-    if start != -1 and end != -1 and end > start:
-        snippet = candidate[start:end + 1]
-        try:
-            return json.loads(snippet)
-        except Exception:
-            return None
-
-    return None
+# Local (LM Studio / Ollama) settings
+LOCAL_LLM_API_URL   = os.environ.get("LLM_API_URL",    "http://localhost:1234/v1/chat/completions")
+LOCAL_LLM_MODEL     = os.environ.get("LLM_MODEL_NAME", "local-model")
 
 
-def _parse_llm_decision(content_text):
-    parsed = _extract_json_object(content_text)
-    if not parsed:
-        return None
+# ===========================================================================
+# Internal helpers -- one function per backend
+# ===========================================================================
 
-    return {
-        "recommended_index": int(parsed.get("recommended_strategy_index", 1)) - 1,
-        "explanation": parsed.get("explanation", "The LLM provided a recommendation.")
-    }
+def _call_gemini(system_prompt: str, user_prompt: str) -> str:
+    """Call Google Gemini REST API and return raw text content."""
+    if not GEMINI_API_KEY:
+        raise ValueError(
+            "GEMINI_API_KEY is not set. "
+            "Add it to backend/.env or set it as an environment variable."
+        )
 
-
-def _call_gemini(system_prompt, user_prompt):
-    api_key = os.environ.get("GEMINI_API_KEY")
-    if not api_key:
-        return {
-            "success": False,
-            "error": "GEMINI_API_KEY is not set. Set GEMINI_API_KEY or switch provider via LLM_PROVIDER=grok."
-        }
-
-    url = f"https://generativelanguage.googleapis.com/v1beta/models/{GEMINI_MODEL}:generateContent?key={api_key}"
     payload = {
-        "contents": [{
-            "parts": [{"text": user_prompt}]
-        }],
-        "systemInstruction": {
-            "parts": [{"text": system_prompt}]
-        },
+        "system_instruction": {"parts": [{"text": system_prompt}]},
+        "contents": [{"parts": [{"text": user_prompt}]}],
         "generationConfig": {
-            "responseMimeType": "application/json",
-            "responseSchema": {
-                "type": "object",
-                "properties": {
-                    "recommended_strategy_index": {"type": "integer"},
-                    "explanation": {"type": "string"}
-                },
-                "required": ["recommended_strategy_index", "explanation"]
-            },
-            "temperature": 0.3
-        }
+            "temperature": 0.3,
+            "maxOutputTokens": 2000,
+        },
     }
 
-    try:
-        response = requests.post(url, json=payload, headers={"Content-Type": "application/json"}, timeout=45)
-        if response.status_code != 200:
-            return {
-                "success": False,
-                "error": f"Gemini API returned status {response.status_code}: {response.text}"
-            }
-
-        resp_json = response.json()
-        content_text = resp_json["candidates"][0]["content"]["parts"][0]["text"]
-        parsed = _parse_llm_decision(content_text)
-        if not parsed:
-            return {"success": False, "error": "Gemini response could not be parsed as decision JSON."}
-
-        return {
-            "success": True,
-            "recommended_index": parsed["recommended_index"],
-            "explanation": parsed["explanation"]
-        }
-    except Exception as e:
-        return {"success": False, "error": str(e)}
+    resp = requests.post(GEMINI_API_URL, json=payload, timeout=60)
+    resp.raise_for_status()
+    data = resp.json()
+    return data["candidates"][0]["content"]["parts"][0]["text"]
 
 
-def _call_grok(system_prompt, user_prompt):
-    api_key = os.environ.get("GROK_API_KEY") or os.environ.get("XAI_API_KEY")
-    if not api_key:
-        return {
-            "success": False,
-            "error": "GROK_API_KEY (or XAI_API_KEY) is not set. Set it or switch provider via LLM_PROVIDER=gemini."
-        }
+def _call_grok(system_prompt: str, user_prompt: str) -> str:
+    """Call xAI Grok REST API (OpenAI-compatible) and return raw text content."""
+    if not GROK_API_KEY:
+        raise ValueError(
+            "GROK_API_KEY is not set. "
+            "Add it to backend/.env or set it as an environment variable."
+        )
 
+    headers = {
+        "Authorization": f"Bearer {GROK_API_KEY}",
+        "Content-Type": "application/json",
+    }
     payload = {
         "model": GROK_MODEL,
         "messages": [
             {"role": "system", "content": system_prompt},
-            {"role": "user", "content": user_prompt}
+            {"role": "user",   "content": user_prompt},
         ],
-        "temperature": 0.3
+        "temperature": 0.3,
+        "max_tokens": 2000,
     }
 
-    headers = {
-        "Authorization": f"Bearer {api_key}",
-        "Content-Type": "application/json"
+    resp = requests.post(GROK_API_URL, headers=headers, json=payload, timeout=60)
+    resp.raise_for_status()
+    return resp.json()["choices"][0]["message"]["content"]
+
+
+def _call_local(system_prompt: str, user_prompt: str) -> str:
+    """Call a local OpenAI-compatible LLM server (LM Studio, Ollama, etc.)."""
+    payload = {
+        "model": LOCAL_LLM_MODEL,
+        "messages": [
+            {"role": "system", "content": system_prompt},
+            {"role": "user",   "content": user_prompt},
+        ],
+        "temperature": 0.3,
+        "max_tokens": 2000,
     }
+
+    resp = requests.post(LOCAL_LLM_API_URL, json=payload, timeout=45)
+    resp.raise_for_status()
+    return resp.json()["choices"][0]["message"]["content"]
+
+
+# ===========================================================================
+# JSON extraction helper (works for all backends)
+# ===========================================================================
+
+def _extract_json(content: str) -> dict:
+    """Extract a JSON object from an LLM response that may contain markdown fences."""
+    # Try stripping markdown code fences
+    match = re.search(r"```(?:json)?\s*(.*?)\s*```", content, re.DOTALL)
+    if match:
+        json_str = match.group(1)
+    else:
+        start = content.find("{")
+        end   = content.rfind("}")
+        json_str = content[start : end + 1] if start != -1 and end != -1 else content
 
     try:
-        response = requests.post(GROK_API_URL, json=payload, headers=headers, timeout=45)
-        if response.status_code != 200:
-            return {
-                "success": False,
-                "error": f"Grok API returned status {response.status_code}: {response.text}"
-            }
-
-        resp_json = response.json()
-        content_text = resp_json["choices"][0]["message"]["content"]
-        parsed = _parse_llm_decision(content_text)
-        if not parsed:
-            return {"success": False, "error": "Grok response could not be parsed as decision JSON."}
+        return json.loads(json_str)
+    except json.JSONDecodeError:
+        # Fallback: regex parse for the two fields we need
+        idx_match = re.search(r'"recommended_strategy_index"\s*:\s*(\d+)', content)
+        exp_match = re.search(r'"explanation"\s*:\s*"([^"]+)"', content)
+        if not exp_match:
+            exp2 = re.search(r'"explanation"\s*:\s*"?([\s\S]+)', content)
+            exp_str = (
+                exp2.group(1).replace('"', "").replace("}", "").strip()
+                if exp2
+                else f"Failed to parse LLM response. Raw: {content[:200]}"
+            )
+        else:
+            exp_str = exp_match.group(1)
 
         return {
-            "success": True,
-            "recommended_index": parsed["recommended_index"],
-            "explanation": parsed["explanation"]
+            "recommended_strategy_index": int(idx_match.group(1)) if idx_match else 1,
+            "explanation": exp_str,
         }
-    except Exception as e:
-        return {"success": False, "error": str(e)}
 
-def consult_llm_for_division(parcel_info, strategies):
+
+# ===========================================================================
+# Public API
+# ===========================================================================
+
+def consult_llm_for_division(parcel_info: dict, strategies: list) -> dict:
     """
-    Calls configured LLM provider (Gemini or Grok) to evaluate subdivision strategies.
+    Route the subdivision consultation to the configured LLM backend.
 
-    Args:
-        parcel_info: dict containing parcel details, share percentages, and GIS context
-        strategies: list of strategy dicts each with 'name', 'polys', 'sub_plot_stats'
+    Parameters
+    ----------
+    parcel_info : dict   -- parcel metadata and user preferences
+    strategies  : list   -- list of subdivision strategy dicts with polygon stats
 
-    Returns:
-        dict with keys:
-          - success (bool)
-          - recommended_index (int, 0-indexed) -- only if success is True
-          - explanation (str) -- only if success is True
-          - error (str) -- only if success is False
+    Returns
+    -------
+    dict with keys:
+      success (bool)
+      recommended_index (int, 0-indexed)
+      explanation (str)
+      provider (str)   -- which backend was used
+    OR on failure:
+      success (bool) = False
+      error (str)
     """
-    # Format strategies text
+
+    # ------------------------------------------------------------------
+    # Build strategy text
+    # ------------------------------------------------------------------
     str_text = ""
     for i, strat in enumerate(strategies):
-        str_text += f"\nStrategy {i+1}: {strat['name']}\n"
+        str_text += f"\nStrategy {i + 1}: {strat['name']}\n"
         stats = strat.get("sub_plot_stats", [])
-        for j, poly in enumerate(strat['polys']):
-            frontage = stats[j]["frontage_m"] if j < len(stats) else 0
+        for j, poly in enumerate(strat["polys"]):
+            frontage       = stats[j]["frontage_m"]         if j < len(stats) else 0
             river_frontage = stats[j].get("river_frontage_m", 0) if j < len(stats) else 0
-            feats = stats[j]["features"] if j < len(stats) else 0
-            str_text += f"  - Sub-Plot {j+1}: Area = {poly.area:.1f} sqm, Perimeter = {poly.length:.1f} m, Road Frontage = {frontage:.1f} m, River Frontage = {river_frontage:.1f} m, Features Inside = {feats}\n"
+            feats          = stats[j]["features"]            if j < len(stats) else 0
+            str_text += (
+                f"  - Sub-Plot {j + 1}: "
+                f"Area = {poly.area:.1f} sqm, "
+                f"Perimeter = {poly.length:.1f} m, "
+                f"Road Frontage = {frontage:.1f} m, "
+                f"River Frontage = {river_frontage:.1f} m, "
+                f"Features Inside = {feats}\n"
+            )
 
+    # ------------------------------------------------------------------
+    # Prompts (identical for all backends)
+    # ------------------------------------------------------------------
     system_prompt = """You are an expert Indian land revenue officer and surveyor.
 Your task is to review mathematical subdivision strategies for a land parcel (Kurra division) and explain which strategy is best according to the UP Revenue Code, 2006, Section 116 and 117.
 
@@ -190,7 +233,7 @@ Key Legal Rules you MUST enforce:
 Choose the best strategy and provide a clear, concise paragraph explaining WHY it is the best choice for the farmers, citing these rules.
 """
 
-    p_info = parcel_info.get("parcel_info", {})
+    p_info    = parcel_info.get("parcel_info", {})
     user_pref = parcel_info.get("user_preferences", "").strip()
 
     user_prompt = f"""Parcel Details:
@@ -224,12 +267,40 @@ CRITICAL REQUIREMENT 4: If both a road and a river are adjacent/nearby, road acc
 Return JSON output with `recommended_strategy_index` (1-indexed integer) and `explanation`.
 """
 
-    print(f"\n--- SENDING PROMPT TO {LLM_PROVIDER.upper()} ---")
+    print(f"\n--- SENDING PROMPT TO LLM (provider={LLM_PROVIDER}) ---")
     print(user_prompt)
-    print("----------------------------------------------\n")
+    print("------------------------------------------------------\n")
 
-    if LLM_PROVIDER == "grok":
-        return _call_grok(system_prompt, user_prompt)
+    # ------------------------------------------------------------------
+    # Route to the correct backend
+    # ------------------------------------------------------------------
+    try:
+        if LLM_PROVIDER == "gemini":
+            raw = _call_gemini(system_prompt, user_prompt)
+        elif LLM_PROVIDER == "grok":
+            raw = _call_grok(system_prompt, user_prompt)
+        elif LLM_PROVIDER == "local":
+            raw = _call_local(system_prompt, user_prompt)
+        else:
+            return {
+                "success": False,
+                "error": (
+                    f"Unknown LLM_PROVIDER '{LLM_PROVIDER}'. "
+                    "Valid values: gemini, grok, local"
+                ),
+            }
 
-    # Default provider is Gemini
-    return _call_gemini(system_prompt, user_prompt)
+        print("\n--- RECEIVED RESPONSE FROM LLM ---")
+        print(raw)
+        print("----------------------------------\n")
+
+        result = _extract_json(raw)
+        return {
+            "success": True,
+            "recommended_index": result.get("recommended_strategy_index", 1) - 1,  # 0-indexed
+            "explanation": result.get("explanation", "The LLM provided a recommendation."),
+            "provider": LLM_PROVIDER,
+        }
+
+    except Exception as exc:
+        return {"success": False, "error": str(exc)}

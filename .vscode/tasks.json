@@ -1,0 +1,135 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    // =========================================================
+    // FIRST-TIME SETUP  (run this once after cloning)
+    // =========================================================
+    {
+      "label": "🚀 Setup & Start (first-time install)",
+      "type": "shell",
+      "command": "bash setup.sh",
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "presentation": {
+        "reveal": "always",
+        "panel": "new",
+        "focus": true
+      },
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "problemMatcher": []
+    },
+
+    // =========================================================
+    // DAILY USE  (after first-time setup is done)
+    // =========================================================
+    {
+      "label": "▶ Start Backend",
+      "type": "shell",
+      "command": "source venv/bin/activate && cd backend && python app.py",
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "presentation": {
+        "reveal": "always",
+        "panel": "new",
+        "focus": true
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "🌐 Start Frontend (HTTP server on :8080)",
+      "type": "shell",
+      "command": "source venv/bin/activate && python -m http.server 8080",
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "presentation": {
+        "reveal": "always",
+        "panel": "new",
+        "focus": false
+      },
+      "problemMatcher": []
+    },
+
+    // =========================================================
+    // SWITCH LLM PROVIDER  (edit backend/.env and restart)
+    // =========================================================
+    {
+      "label": "🔑 Switch to Gemini",
+      "type": "shell",
+      "command": "read -rp 'Gemini API key: ' K && read -rp 'Model [gemini-2.5-flash]: ' M && M=${M:-gemini-2.5-flash} && printf 'LLM_PROVIDER=gemini\\nGEMINI_API_KEY=%s\\nGEMINI_MODEL=%s\\n' \"$K\" \"$M\" > backend/.env && echo '[OK] backend/.env updated. Restart the backend task.'",
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared",
+        "focus": true
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "🔑 Switch to Grok",
+      "type": "shell",
+      "command": "read -rp 'Grok API key: ' K && read -rp 'Model [grok-2-latest]: ' M && M=${M:-grok-2-latest} && printf 'LLM_PROVIDER=grok\\nGROK_API_KEY=%s\\nGROK_MODEL=%s\\nGROK_API_URL=https://api.x.ai/v1/chat/completions\\n' \"$K\" \"$M\" > backend/.env && echo '[OK] backend/.env updated. Restart the backend task.'",
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared",
+        "focus": true
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "🖥 Switch to Local LM Studio",
+      "type": "shell",
+      "command": "printf 'LLM_PROVIDER=local\\nLLM_API_URL=http://localhost:1234/v1/chat/completions\\nLLM_MODEL_NAME=local-model\\n' > backend/.env && echo '[OK] backend/.env updated for local LLM. Restart the backend task.'",
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared",
+        "focus": true
+      },
+      "problemMatcher": []
+    },
+
+    // =========================================================
+    // UTILITIES
+    // =========================================================
+    {
+      "label": "📦 Install / Update Dependencies",
+      "type": "shell",
+      "command": "source venv/bin/activate && pip install -r requirements.txt",
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "🧪 Run Backend Tests",
+      "type": "shell",
+      "command": "source venv/bin/activate && cd backend && python -m pytest test_phase2_backend.py -v",
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      },
+      "group": "test",
+      "problemMatcher": []
+    }
+  ]
+}

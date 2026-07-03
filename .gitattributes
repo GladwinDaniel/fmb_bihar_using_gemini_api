@@ -1,0 +1,10 @@
+﻿# Force LF line endings for shell scripts (Ubuntu requires LF, not CRLF)
+*.sh text eol=lf
+
+# Force LF for config files that are read on Linux
+.env.example text eol=lf
+.vscode/tasks.json text eol=lf
+.vscode/extensions.json text eol=lf
+
+# Auto-detect for everything else
+* text=auto

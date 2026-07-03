@@ -1,363 +1,215 @@
-# Bhu-Overlay -- Installation Guide (Gemini API Edition)
+# Bhu-Overlay -- Installation Guide
 
-This guide walks you through setting up **Bhu-Overlay** on a Windows, macOS, or Linux machine from scratch.
-
-> **This is the Gemini API version.** It uses Google's Gemini API for AI-powered Kurra division instead of a local LLM. No LM Studio installation is required.
+> **Target platform**: Ubuntu Linux with VS Code.  
+> All commands below are run in the **VS Code integrated terminal** (bash).
 
 ---
 
 ## Prerequisites
 
-Before you begin, ensure you have the following:
+Install these once on your Ubuntu machine (skip anything already installed):
 
-| Tool | Version | Where to get it |
-|---|---|---|
-| **Python** | 3.9 or higher | https://www.python.org/downloads/ |
-| **pip** | (bundled with Python) | Run `pip --version` to verify |
-| **Git** | Any recent version | https://git-scm.com/downloads |
-| **Google Gemini API Key** | Free tier available | https://aistudio.google.com/apikey |
-| A modern web browser | Chrome, Firefox, Edge |  |
+```bash
+# Python 3.9+, pip, venv support, and git
+sudo apt update
+sudo apt install -y python3 python3-pip python3-venv git
 
-> [!NOTE]
-> Internet access to Bihar Government GIS servers is only needed for the first time you load a village sheet. After that, all data is cached locally in `bhunaksha.db` and JSON cache files, and the app works fully offline (except for AI Kurra division, which always requires internet to reach the Gemini API).
+# Verify versions
+python3 --version   # must be 3.9 or higher
+git --version
+```
+
+You also need a modern browser (Chrome, Firefox, or Edge).
 
 ---
 
 ## Step 1 -- Clone the Repository
 
-Open a terminal (Command Prompt / PowerShell on Windows, Terminal on macOS/Linux):
+Open VS Code, press **Ctrl+`** to open the integrated terminal, then:
 
 ```bash
-git clone https://github.com/GladwinDaniel/fmb_bihar_using_gemini_api.git
-cd fmb_bihar_using_gemini_api
+git clone <your-repo-url>
+cd Fmb
+
+# Open the folder in VS Code
+code .
 ```
 
-Your project directory should look like:
-```
-fmb_bihar_using_gemini_api/
- backend/           Python Flask backend
- frontend/          HTML/JS/CSS frontend
- requirements.txt   Python dependency list
- README.md
- INSTALL.md         This file
-```
+> [!TIP]
+> VS Code will automatically suggest installing recommended extensions (Python, Pylance, etc.).  
+> Click **Install All** when prompted.
 
 ---
 
-## Step 2 -- Create a Virtual Environment (Recommended)
+## Step 2 -- Run the Setup Script (first-time only)
 
-It is best practice to isolate project dependencies.
+This single command does **everything**: creates a virtual environment, installs all Python packages, asks which LLM provider you want, writes `backend/.env`, and starts the backend.
 
-**Windows:**
 ```bash
-python -m venv venv
-venv\Scripts\activate
+chmod +x setup.sh
+./setup.sh
 ```
 
-**macOS / Linux:**
+You will see an interactive menu:
+
+```
+Which LLM provider do you want to use?
+
+  1) Google Gemini  (recommended -- free API key)
+  2) xAI Grok       (API key required)
+  3) Local LM Studio / Ollama  (offline, no key needed)
+  4) Skip LLM setup  (fallback mode)
+
+Enter choice [1-4]:
+```
+
+Pick your provider, paste your API key when asked, and the backend starts automatically.
+
+> [!IMPORTANT]
+> `backend/.env` (which contains your API key) is listed in `.gitignore` and will **never** be committed to git.
+
+---
+
+## Step 3 -- Start the Frontend
+
+Open a **second terminal tab** in VS Code (**Ctrl+Shift+`**) and run:
+
 ```bash
-python3 -m venv venv
 source venv/bin/activate
-```
-
-You should see `(venv)` appear at the start of your terminal prompt.
-
-> [!TIP]
-> To deactivate the virtual environment later, simply type `deactivate`.
-
----
-
-## Step 3 -- Install Python Dependencies
-
-With the virtual environment active, run:
-
-```bash
-pip install -r requirements.txt
-```
-
-This installs all required packages:
-
-| Package | Purpose |
-|---|---|
-| `flask` | Core web server and API framework for the backend |
-| `flask-cors` | Allows the browser frontend to call the backend API (CORS headers) |
-| `flask-sqlalchemy` | ORM for persisting parcel data in SQLite |
-| `requests` | HTTP client for proxying calls to BhuNaksha, Bihar GIS, and Gemini API |
-| `urllib3` | HTTP library (suppresses SSL warnings from government servers) |
-| `beautifulsoup4` | Parses BhuNaksha HTML responses to extract owner names and khata data |
-| `lxml` | Fast HTML parser backend for BeautifulSoup |
-| `shapely` | Polygon geometry: splitting, containment checks, buffers |
-| `pyproj` | Coordinate conversion: WGS84 GPS <-> UTM Zone 45N (EPSG:32645) |
-| `numpy` | Numerical arrays for geometry computations |
-| `fpdf2` | Generates the Kurra Division PDF reports |
-| `pdfplumber` | Extracts the official area value from BhuNaksha downloaded PDF reports |
-| `opencv-python` | Draws the parcel map diagram (polygon overlays, feature dots) inside the PDF |
-| `python-dotenv` | Loads `GEMINI_API_KEY` from a `.env` file |
-| `pytest` | Test framework to run backend unit tests |
-
-> [!WARNING]
-> **Windows Users**: `opencv-python` requires Microsoft Visual C++ Redistributable. If the install fails, download it from [Microsoft](https://learn.microsoft.com/en-us/cpp/windows/latest-supported-vc-redist) and retry.
-
----
-
-## Step 4 -- Configure the Gemini API Key (Required for AI Kurra Division)
-
-The AI Kurra Division engine sends subdivision strategy data to the **Google Gemini API**. You need a free API key to use this feature.
-
-### Get a Free API Key
-
-1. Go to [https://aistudio.google.com/apikey](https://aistudio.google.com/apikey)
-2. Sign in with your Google account
-3. Click **Create API Key**
-4. Copy the key
-
-### Set the API Key
-
-### Choose LLM Provider (Gemini or Grok)
-
-By default, the backend uses Gemini. You can switch providers using `LLM_PROVIDER`.
-
-`LLM_PROVIDER=gemini` (default):
-- Required key: `GEMINI_API_KEY`
-- Optional model: `GEMINI_MODEL` (default: `gemini-2.5-flash`)
-
-`LLM_PROVIDER=grok`:
-- Required key: `GROK_API_KEY` (or `XAI_API_KEY`)
-- Optional model: `GROK_MODEL` (default: `grok-2-latest`)
-- Optional URL override: `GROK_API_URL` (default: `https://api.x.ai/v1/chat/completions`)
-
-**Option A -- Environment Variable (Recommended for quick start)**
-
-**Windows (Command Prompt):**
-```cmd
-set GEMINI_API_KEY=your_api_key_here
-```
-
-**Windows (PowerShell):**
-```powershell
-$env:GEMINI_API_KEY="your_api_key_here"
-```
-
-**macOS / Linux:**
-```bash
-export GEMINI_API_KEY="your_api_key_here"
-```
-
-If using Grok, set these instead:
-
-**Windows (PowerShell):**
-```powershell
-$env:LLM_PROVIDER="grok"
-$env:GROK_API_KEY="your_grok_api_key_here"
-```
-
-**macOS / Linux:**
-```bash
-export LLM_PROVIDER="grok"
-export GROK_API_KEY="your_grok_api_key_here"
-```
-
-> [!IMPORTANT]
-> You must set this environment variable in the same terminal session where you run `python app.py`. The variable is lost when you close the terminal.
-
-**Option B -- Use a `.env` File (Recommended for persistent setup)**
-
-Create a file named `.env` inside the `backend/` directory:
-
-```
-backend/.env
-```
-
-With this content:
-```env
-GEMINI_API_KEY=your_api_key_here
-GEMINI_MODEL=gemini-2.5-flash
-# Optional provider switch:
-# LLM_PROVIDER=grok
-# GROK_API_KEY=your_grok_api_key_here
-# GROK_MODEL=grok-2-latest
-# GROK_API_URL=https://api.x.ai/v1/chat/completions
-```
-
-The `python-dotenv` package will automatically load this file when the backend starts.
-
-> [!NOTE]
-> `GEMINI_MODEL` is optional. If not set, it defaults to `gemini-2.5-flash`. You can change it to `gemini-2.5-pro` or any other available Gemini model.
-
-> [!TIP]
-> If the Gemini API key is not set or the API call fails, the system automatically falls back to the first mathematical strategy (Compact Cut). You can still use all other features without an API key.
-
----
-
-## Step 5 -- Start the Backend Server
-
-Navigate into the backend directory and start the Flask application:
-
-```bash
-cd backend
-python app.py
-```
-
-You should see output like:
-```
-Session cookies loaded from disk.
- * Running on http://127.0.0.1:5001
- * Debug mode: on
-```
-
-> [!IMPORTANT]
-> The backend **must be running** before you open the frontend. The backend serves as the API gateway -- all map data flows through it.
->
-> The backend runs on port **5001** by default. Do **not** change this unless you also update `API_BASE_URL` in `frontend/app.js`.
-
-**Do not close this terminal window** -- keep the backend running in the background.
-
----
-
-## Step 6 -- Open the Frontend
-
-Open a **new terminal window** (keep the backend terminal open), and start a simple HTTP server from the project root:
-
-```bash
-# Navigate back to the project root from the backend/ folder
-cd ..
-
-# Start a simple HTTP server on port 8080
 python -m http.server 8080
 ```
 
-Now open your browser and navigate to:
+Then open your browser at:
 ```
 http://localhost:8080/frontend/index.html
 ```
 
 ---
 
-## Fast Setup On Another PC (Windows PowerShell)
+## Using VS Code Tasks (Recommended)
 
-Use these commands exactly:
+Instead of typing commands every day, use the built-in tasks.  
+Press **Ctrl+Shift+P** → type **"Run Task"** → pick from the list:
 
-```powershell
-git clone https://github.com/GladwinDaniel/fmb_bihar_using_gemini_api.git
-cd fmb_bihar_using_gemini_api
-python -m venv venv
-.\venv\Scripts\Activate.ps1
-pip install -r requirements.txt
-$env:GEMINI_API_KEY="your_api_key_here"
-cd backend
-python app.py
-```
-
-Open a second PowerShell window:
-
-```powershell
-cd fmb_bihar_using_gemini_api
-python -m http.server 8080
-```
-
-Then open `http://localhost:8080/frontend/index.html`.
-
----
-
-## Provider-Specific Command Packs (Windows PowerShell)
-
-Use one complete block depending on your LLM provider.
-
-### Gemini
-
-```powershell
-git clone https://github.com/GladwinDaniel/fmb_bihar_using_gemini_api.git
-cd fmb_bihar_using_gemini_api
-python -m venv venv
-.\venv\Scripts\Activate.ps1
-pip install -r requirements.txt
-$env:LLM_PROVIDER="gemini"
-$env:GEMINI_API_KEY="your_gemini_api_key_here"
-cd backend
-python app.py
-```
-
-### Grok
-
-```powershell
-git clone https://github.com/GladwinDaniel/fmb_bihar_using_gemini_api.git
-cd fmb_bihar_using_gemini_api
-python -m venv venv
-.\venv\Scripts\Activate.ps1
-pip install -r requirements.txt
-$env:LLM_PROVIDER="grok"
-$env:GROK_API_KEY="your_grok_api_key_here"
-# Optional:
-# $env:GROK_MODEL="grok-2-latest"
-# $env:GROK_API_URL="https://api.x.ai/v1/chat/completions"
-cd backend
-python app.py
-```
-
-Frontend in second terminal:
-
-```powershell
-cd fmb_bihar_using_gemini_api
-python -m http.server 8080
-```
+| Task | What it does |
+|---|---|
+| 🚀 **Setup & Start (first-time install)** | Runs `setup.sh` -- full install + backend start |
+| ▶ **Start Backend** | Activates venv and starts Flask (use after first-time setup) |
+| 🌐 **Start Frontend (HTTP server on :8080)** | Serves the frontend at `localhost:8080` |
+| 🔑 **Switch to Gemini** | Updates `backend/.env` to use Gemini (prompts for key) |
+| 🔑 **Switch to Grok** | Updates `backend/.env` to use Grok (prompts for key) |
+| 🖥 **Switch to Local LM Studio** | Updates `backend/.env` for local/offline LLM |
+| 📦 **Install / Update Dependencies** | Re-runs `pip install -r requirements.txt` |
+| 🧪 **Run Backend Tests** | Runs `pytest` on the backend test suite |
 
 > [!TIP]
-> You can also open `frontend/index.html` directly by double-clicking the file in your file explorer.
-> The app auto-detects `file://` and `localhost` origins and routes API calls to `http://127.0.0.1:5001` correctly.
+> You can also use **Ctrl+Shift+B** as a shortcut to run the default build task (**Setup & Start**).
 
 ---
 
-## Verification
+## Daily Workflow (after first-time setup)
 
-Once you have the frontend open in your browser, verify the setup works:
+Every time you want to work on the project:
 
-1. **Districts load**: The "District" dropdown should auto-populate with Bihar's district names. If it doesn't, the backend is not reachable -- check that the Flask server is running on port `5001`.
+```bash
+# Terminal 1 -- backend
+source venv/bin/activate
+cd backend && python app.py
 
-2. **Select a location**: Choose District -> Sub-Division -> Circle -> Mouza -> Survey -> Map Instance -> Sheet. The cadastral map overlay should appear on the satellite map.
+# Terminal 2 -- frontend
+source venv/bin/activate
+python -m http.server 8080
+```
 
-3. **Click a parcel**: Click any plot boundary on the map. Plot details (Number, Khata, Owner, Area) should appear in the sidebar.
+Or simply use the VS Code tasks above.
 
-4. **Test AI Kurra**: Select a plot, click "Kurra Division", set shares, and click "Generate". If `GEMINI_API_KEY` is set, the AI recommendation box should appear with an explanation from Gemini.
+---
 
-5. **Run tests** (optional): From the `backend/` directory:
-   ```bash
-   python -m pytest test_phase2_backend.py -v
-   ```
+## Switching LLM Providers
+
+To switch from Gemini to Grok (or vice versa) **without editing any code**:
+
+**Option A -- VS Code Task (easiest):**  
+`Ctrl+Shift+P` → **Run Task** → **🔑 Switch to Gemini** (or Grok)
+
+**Option B -- Edit `backend/.env` directly:**
+```bash
+# Use your preferred editor
+nano backend/.env
+```
+
+Change `LLM_PROVIDER=` to `gemini`, `grok`, or `local`, fill in the matching key, save, then restart the backend.
+
+**Option C -- Environment variables in the terminal:**
+```bash
+# Gemini
+export LLM_PROVIDER=gemini
+export GEMINI_API_KEY=your_key_here
+export GEMINI_MODEL=gemini-2.5-flash   # optional
+
+# Grok
+export LLM_PROVIDER=grok
+export GROK_API_KEY=your_key_here
+export GROK_MODEL=grok-2-latest        # optional
+```
+
+Then restart `python app.py`.
+
+> [!NOTE]
+> Environment variables set in the terminal override `backend/.env` values.
 
 ---
 
 ## Project File Overview
 
 ```
-Fmb_gemini/
- README.md                     Feature overview and API reference
- INSTALL.md                    This installation guide
- TECHNICAL_DOCS.md             Deep technical documentation
- requirements.txt              Python package dependencies
- backend_architecture.md       Backend Mermaid architecture diagram
- frontend_architecture.md      Frontend Mermaid architecture diagram
- CONNECTION_GUIDE.md           How frontend & backend communicate (HTTP/AJAX)
-
- backend/
-    app.py                    <- Flask server -- API gateway, all 14 routes
-    models.py                 SQLAlchemy ORM models (Parcel, Vertex, Segment, Report)
-    subdivide.py              Polygon splitting (binary search, Shapely)
-    llm_expert.py             Google Gemini API consultation for strategy ranking
-    gis_querier.py            Bihar ArcGIS REST queries (roads, rivers)
-    report_generator.py       Kurra PDF generation (FPDF2 + OpenCV)
-    pdf_parser.py             Extracts area from BhuNaksha PDF reports
-    dropdown_cache.json       Auto-generated: administrative hierarchy cache
-    extent_cache.json         Auto-generated: sheet bounding box cache
-    session_cookies.json      Auto-generated: BhuNaksha session cookie store
-    test_phase2_backend.py    Backend unit tests
-    instance/
-        bhunaksha.db          Auto-created SQLite database on first run
-
- frontend/
-     index.html                Single-page application HTML
-     app.js                    All application logic (OpenLayers, AJAX, UI)
-     style.css                 Responsive dark-theme CSS
+Fmb/
+├── setup.sh                    ← Run this first after cloning (Ubuntu/Linux)
+├── .env.example                ← Configuration template (copy to backend/.env)
+├── requirements.txt            ← Python dependencies
+├── .vscode/
+│   ├── tasks.json              ← VS Code tasks (Setup, Start, Switch provider, Test)
+│   └── extensions.json         ← Recommended VS Code extensions
+│
+├── backend/
+│   ├── app.py                  ← Flask server -- all API routes
+│   ├── llm_expert.py           ← LLM router (Gemini / Grok / Local)
+│   ├── models.py               ← SQLAlchemy ORM models
+│   ├── subdivide.py            ← Polygon splitting algorithms (Shapely)
+│   ├── gis_querier.py          ← Bihar ArcGIS REST queries (roads, rivers)
+│   ├── report_generator.py     ← Kurra PDF generation (FPDF2 + OpenCV)
+│   ├── pdf_parser.py           ← Extracts area from BhuNaksha PDFs
+│   ├── test_phase2_backend.py  ← Backend unit tests
+│   └── .env                    ← YOUR API KEYS (created by setup.sh, not in git)
+│
+├── frontend/
+│   ├── index.html              ← Single-page app
+│   ├── app.js                  ← All UI logic (OpenLayers, AJAX)
+│   └── style.css               ← Dark-theme responsive CSS
+│
+└── docs/
+    ├── README.md
+    ├── INSTALL.md              ← This file
+    ├── TECHNICAL_DOCS.md
+    ├── CONNECTION_GUIDE.md
+    ├── backend_architecture.md
+    └── frontend_architecture.md
 ```
+
+---
+
+## Verification
+
+Once both servers are running, verify everything works:
+
+1. **Dropdown loads** -- The "District" dropdown should auto-populate with Bihar districts. If empty, the backend is not running on port `5001`.
+2. **Select a location** -- District → Sub-Division → Circle → Mouza → Survey → Map Instance → Sheet. A cadastral map overlay should appear.
+3. **Click a parcel** -- Click any plot boundary. Owner name, plot number, and area should appear in the sidebar.
+4. **Run tests** (optional):
+   ```bash
+   source venv/bin/activate
+   cd backend && python -m pytest test_phase2_backend.py -v
+   ```
 
 ---
 
@@ -365,48 +217,47 @@ Fmb_gemini/
 
 | Error | Cause | Fix |
 |---|---|---|
-| `ModuleNotFoundError: No module named 'flask'` | Dependencies not installed | Run `pip install -r requirements.txt` |
-| `Address already in use` on port 5001 | Another process is using port 5001 | Kill the other process or change the port in `app.py` (last line) |
-| Districts dropdown is empty | Backend is not reachable | Ensure `python app.py` is running in the `backend/` directory |
-| `cv2` / OpenCV import error | Binary not installed properly | Try `pip install opencv-python-headless` instead of `opencv-python` |
-| `SSL: CERTIFICATE_VERIFY_FAILED` | Python on macOS needs certificates | Run `/Applications/Python 3.x/Install Certificates.command` |
-| AI Kurra shows "GEMINI_API_KEY not set" | API key not configured | Set the `GEMINI_API_KEY` environment variable (see Step 4) |
-| Gemini API returns 429 (rate limit) | Too many requests on free tier | Wait and retry, or upgrade your Google AI plan |
-| Gemini API returns 400 | Invalid API key | Check your key at https://aistudio.google.com/apikey |
-| `bhunaksha.db` permission error | DB file locked | Close all other processes accessing the DB |
-| Map shows no WMS tiles | BhuNaksha server offline | Normal -- government server has downtime. Tiles are cached for future use. |
+| `python3: command not found` | Python not installed | `sudo apt install python3` |
+| `ModuleNotFoundError: No module named 'flask'` | venv not activated or deps not installed | `source venv/bin/activate && pip install -r requirements.txt` |
+| `Address already in use` on port 5001 | Another Flask process is running | `pkill -f "python app.py"` then restart |
+| `Address already in use` on port 8080 | Another HTTP server is running | `pkill -f "http.server"` then restart |
+| Districts dropdown is empty | Backend not reachable | Check that `python app.py` is running in `backend/` |
+| `cv2` import error | OpenCV binary issue | `pip install opencv-python-headless` |
+| LLM gives no output / fallback fires | Wrong API key or `LLM_PROVIDER` not set | Check `backend/.env` -- run **Switch to Gemini** task |
+| `GEMINI_API_KEY is not set` error in terminal | `.env` missing or empty | Copy `.env.example` → `backend/.env` and fill in key |
+| `bhunaksha.db` permission error | DB file locked | `fuser -k backend/instance/bhunaksha.db` |
+| Map shows no WMS tiles | BhuNaksha government server offline | Normal -- tiles are cached after first load |
 
 ---
 
 ## Updating the Project
 
-To update to the latest version:
-
 ```bash
 git pull origin main
-pip install -r requirements.txt   # Install any new dependencies
+source venv/bin/activate
+pip install -r requirements.txt   # install any new dependencies
 ```
 
 ---
 
 ## Team Quickstart
 
-### Frontend-Only Team
-- Edit files in `frontend/` (`index.html`, `app.js`, `style.css`).
-- You still need the backend running to test API calls. Follow Steps 5-6 above.
-- Read `frontend_architecture.md` and `CONNECTION_GUIDE.md`.
+### Frontend Team
+- Edit files in `frontend/` (`index.html`, `app.js`, `style.css`)
+- You still need the backend running -- use the **▶ Start Backend** VS Code task
+- Read `CONNECTION_GUIDE.md` to understand how the UI calls the API
 
-### Backend-Only Team
-- Focus on the `backend/` directory.
-- You need Python 3.9+, `pip`, and the virtual environment (Steps 2-3).
-- Run `python app.py` to start the server (Step 5).
-- Run `python -m pytest test_phase2_backend.py -v` to execute unit tests.
-- Read `backend_architecture.md` and `TECHNICAL_DOCS.md`.
-
-### GIS / Data Team
-- Focus on `gis_querier.py` (road/river queries from Bihar GIS), `subdivide.py` (polygon algorithms), and the SQLite database in `backend/instance/bhunaksha.db`.
+### Backend Team
+- Work inside `backend/`
+- Start the server: **▶ Start Backend** VS Code task
+- Run tests: **🧪 Run Backend Tests** VS Code task
+- Read `TECHNICAL_DOCS.md` and `backend_architecture.md`
 
 ### AI / LLM Team
-- Focus on `llm_expert.py` (prompt engineering and strategy ranking using Gemini API).
-- Configure your API key via `.env` or environment variables (Step 4).
-- The Gemini API is consulted during every Kurra division request at the `/api/parcel/<plot_no>/subdivide` endpoint.
+- Edit `backend/llm_expert.py` (the LLM router)
+- Switch providers with the **🔑 Switch to Gemini / Grok** VS Code tasks
+- The LLM is called at every `/api/parcel/<plot_no>/subdivide` request
+
+### GIS / Data Team
+- Focus on `backend/gis_querier.py`, `backend/subdivide.py`, and the SQLite DB
+- Inspect the DB: `sudo apt install sqlitebrowser` then open `backend/instance/bhunaksha.db`

@@ -35,17 +35,28 @@ static/reports/
 # Python test cache
 .pytest_cache/
 
-# IDE / OS files
-.vscode/
+# IDE -- ignore personal settings, but KEEP shared team config
+.vscode/settings.json
+.vscode/launch.json
+.vscode/*.code-workspace
 .idea/
+
+# OS files
 Thumbs.db
 ehthumbs.db
 Desktop.ini
+.DS_Store
+
+# Python virtual environment
+venv/
+.venv/
 
 instance/
 *.txt
 
-# Local env files (API keys)
+# LLM API keys -- NEVER commit real .env
+# .env.example IS committed (it's just a template, no real keys)
 .env
 backend/.env
+!.env.example
 

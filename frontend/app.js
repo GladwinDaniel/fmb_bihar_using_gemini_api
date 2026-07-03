@@ -41,7 +41,9 @@
 //   In prod: calls use relative URLs (same-origin server serves both)
 // =============================================================================
 
-const API_BASE_URL = window.location.port === '8080' || window.location.protocol === 'file:'
+const isDev = window.location.protocol === 'file:' || 
+              (window.location.port && !['5001', '80', '443'].includes(window.location.port));
+const API_BASE_URL = isDev
     ? `${window.location.protocol === 'file:' ? 'http:' : window.location.protocol}//${window.location.hostname || '127.0.0.1'}:5001`
     : ''; // empty string in production/same-origin
 

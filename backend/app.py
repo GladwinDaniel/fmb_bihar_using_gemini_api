@@ -110,8 +110,9 @@ session.verify = False  # Disable SSL verification for self-signed government ce
 #   static/wms_cache/*.png   WMS tile PNGs (MD5-keyed filenames)
 #   instance/bhunaksha.db    SQLite: full parcel geometries + metadata
 # =============================================================================
-DROPDOWN_CACHE_FILE = "dropdown_cache.json"
-EXTENT_CACHE_FILE = "extent_cache.json"
+BACKEND_DIR = os.path.dirname(os.path.abspath(__file__))
+DROPDOWN_CACHE_FILE = os.path.join(BACKEND_DIR, "dropdown_cache.json")
+EXTENT_CACHE_FILE = os.path.join(BACKEND_DIR, "extent_cache.json")
 
 def load_json_cache(filename):
     """Load a JSON cache file from disk. Returns empty dict if file not found."""
@@ -135,9 +136,9 @@ def save_json_cache(filename, data):
 lists_after_level_cache = load_json_cache(DROPDOWN_CACHE_FILE)
 vvvv_extent_cache = load_json_cache(EXTENT_CACHE_FILE)
 
-GISCODE_CACHE_FILE = "giscode_cache.json"
-PNIU_CACHE_FILE = "pniu_cache.json"
-PLOT_AT_XY_CACHE_FILE = "plot_at_xy_cache.json"
+GISCODE_CACHE_FILE = os.path.join(BACKEND_DIR, "giscode_cache.json")
+PNIU_CACHE_FILE = os.path.join(BACKEND_DIR, "pniu_cache.json")
+PLOT_AT_XY_CACHE_FILE = os.path.join(BACKEND_DIR, "plot_at_xy_cache.json")
 
 giscode_cache = load_json_cache(GISCODE_CACHE_FILE)
 pniu_cache = load_json_cache(PNIU_CACHE_FILE)
@@ -163,7 +164,7 @@ plot_at_xy_cache = load_json_cache(PLOT_AT_XY_CACHE_FILE)
 # =============================================================================
 
 # Disk-based cookie persistence for BhuNaksha sessions
-COOKIE_FILE = "session_cookies.json"
+COOKIE_FILE = os.path.join(BACKEND_DIR, "session_cookies.json")
 
 def save_cookies(sess):
     try:

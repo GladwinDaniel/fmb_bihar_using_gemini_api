@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bihar Cadastral Map & Satellite Dashboard</title>
+    
+    <!-- OpenLayers CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/openlayers/openlayers.github.io@master/en/v6.15.1/css/ol.css" type="text/css">
+    
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Sidebar Toggle (Floating button on small screens) -->
+    <button class="float-toggle" id="sidebar-toggle-float">
+        <i class="fa fa-bars"></i>
+    </button>
+
+    <!-- Sidebar Panel -->
+    <div class="sidebar" id="sidebar">
+        <!-- Logo and Toggle Header -->
+        <div class="sidebar-header">
+            <div class="logo-container">
+                <i class="fa fa-map logo-icon"></i>
+                <span class="logo-text">Bhu-Overlay</span>
+            </div>
+            <button class="collapse-btn" id="sidebar-toggle-collapse">
+                <i class="fa fa-chevron-left" id="collapse-icon"></i>
+            </button>
+        </div>
+
+        <!-- Sidebar Content -->
+        <div class="sidebar-content">
+            <!-- Location Filters Panel -->
+            <div class="form-section">
+                <h3 class="section-title"><i class="fa fa-globe"></i> Location Selector</h3>
+                <div class="panel-card">
+                    <!-- District Select -->
+                    <div class="form-group">
+                        <label class="form-label" for="select-district">District</label>
+                        <div class="select-wrapper">
+                            <select id="select-district">
+                                <option value="">--Select District--</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Subdivision Select -->
+                    <div class="form-group">
+                        <label class="form-label" for="select-subdiv">Sub-Division</label>
+                        <div class="select-wrapper">
+                            <select id="select-subdiv" disabled>
+                                <option value="">--Select Subdivision--</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Circle Select -->
+                    <div class="form-group">
+                        <label class="form-label" for="select-circle">Circle</label>
+                        <div class="select-wrapper">
+                            <select id="select-circle" disabled>
+                                <option value="">--Select Circle--</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Mouza Select -->
+                    <div class="form-group">
+                        <label class="form-label" for="select-mouza">Mouza (Village)</label>
+                        <div class="select-wrapper">
+                            <select id="select-mouza" disabled>
+                                <option value="">--Select Mouza--</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Survey Type Select -->
+                    <div class="form-group">
+                        <label class="form-label" for="select-survey">Survey Type</label>
+                        <div class="select-wrapper">
+                            <select id="select-survey" disabled>
+                                <option value="">--Select Survey--</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Map Instance Select -->
+                    <div class="form-group">
+                        <label class="form-label" for="select-mapinst">Map Instance</label>
+                        <div class="select-wrapper">
+                            <select id="select-mapinst" disabled>
+                                <option value="">--Select Map--</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Sheet No Select -->
+                    <div class="form-group">
+                        <label class="form-label" for="select-sheet">Sheet Number</label>
+                        <div class="select-wrapper">
+                            <select id="select-sheet" disabled>
+                                <option value="">--Select Sheet--</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PNIU / Search Panel -->
+            <div class="form-section">
+                <h3 class="section-title"><i class="fa fa-search"></i> Search Land Parcel</h3>
+                <div class="panel-card">
+                    <!-- PNIU Search -->
+                    <div class="form-group">
+                        <label class="form-label" for="search-pniu">Search by PNIU Code</label>
+                        <div class="search-wrapper">
+                            <input type="text" id="search-pniu" placeholder="Enter 14-digit PNIU...">
+                            <button class="search-btn" id="btn-search-pniu">
+                                <i class="fa fa-search"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Opacity Control Card -->
+            <div class="form-section">
+                <h3 class="section-title"><i class="fa fa-sliders"></i> Map Layers</h3>
+                <div class="panel-card">
+                    <div class="slider-group">
+                        <div class="slider-header">
+                            <span>Cadastral Map Opacity</span>
+                            <span id="opacity-value">60%</span>
+                        </div>
+                        <div class="slider-container">
+                            <input type="range" id="opacity-slider" min="0" max="100" value="60">
+                        </div>
+                    </div>
+                    <div class="slider-group" style="margin-top: 0.75rem;">
+                        <div class="slider-header">
+                            <span>Street Overlay Opacity</span>
+                            <span id="street-opacity-value">0%</span>
+                        </div>
+                        <div class="slider-container">
+                            <input type="range" id="street-opacity-slider" min="0" max="100" value="0">
+                        </div>
+                    </div>
+                    <div class="form-group" style="margin-top: 0.75rem; width: 100%; border-top: 1px solid var(--border-color); padding-top: 0.75rem;">
+                        <label class="form-label" style="font-weight: bold; color: var(--accent-color); font-size: 0.8rem; margin-bottom: 0.25rem;">Basemap Style</label>
+                        <div style="display: flex; gap: 0.4rem; flex-direction: column; color: var(--text-primary); font-size: 0.85rem;">
+                            <label style="display: flex; align-items: center; gap: 0.5rem;"><input type="radio" name="basemap_type" value="satellite" checked> Satellite Imagery (ArcGIS)</label>
+                            <label style="display: flex; align-items: center; gap: 0.5rem;"><input type="radio" name="basemap_type" value="streets"> Street Map (ArcGIS)</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Bihar GIS Layer Control -->
+            <div class="form-section">
+                <h3 class="section-title"><i class="fa fa-map-o"></i> Bihar GIS Overlays</h3>
+                <div class="panel-card" style="display: flex; flex-direction: column; gap: 0.5rem; max-height: 250px; overflow-y: auto; padding: 0.75rem;">
+                    <!-- Transportation Toggles -->
+                    <div style="font-weight: bold; font-size: 0.8rem; margin-bottom: 2px; color: var(--accent-color);">Roads & Rails</div>
+                    <label style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.85rem; color: var(--text-primary);">
+                        <input type="checkbox" id="chk-nh-roads" checked> National Highways
+                    </label>
+                    <label style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.85rem; color: var(--text-primary);">
+                        <input type="checkbox" id="chk-sh-roads" checked> State Highways & MDR
+                    </label>
+                    <label style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.85rem; color: var(--text-primary);">
+                        <input type="checkbox" id="chk-village-roads" checked> Village & Local Roads
+                    </label>
+                    <label style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.85rem; color: var(--text-primary);">
+                        <input type="checkbox" id="chk-full-roads"> Bihar Road Network (Full)
+                    </label>
+                    
+                    <!-- Administrative Boundaries Toggles -->
+                    <div style="font-weight: bold; font-size: 0.8rem; margin-top: 5px; margin-bottom: 2px; color: var(--accent-color);">Administrative Boundaries</div>
+                    <label style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.85rem; color: var(--text-primary);">
+                        <input type="checkbox" id="chk-panchayat-boundaries"> Panchayat Boundaries
+                    </label>
+                    <label style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.85rem; color: var(--text-primary);">
+                        <input type="checkbox" id="chk-village-boundaries"> Village Boundaries
+                    </label>
+                    
+                    <!-- Water Toggles -->
+                    <div style="font-weight: bold; font-size: 0.8rem; margin-top: 5px; margin-bottom: 2px; color: var(--accent-color);">Hydrology</div>
+                    <label style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.85rem; color: var(--text-primary);">
+                        <input type="checkbox" id="chk-rivers" checked> Rivers & Canals
+                    </label>
+                    
+                    <!-- Amenities & Assets Toggles -->
+                    <div style="font-weight: bold; font-size: 0.8rem; margin-top: 5px; margin-bottom: 2px; color: var(--accent-color);">Assets & Amenities</div>
+                    <label style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.85rem; color: var(--text-primary);">
+                        <input type="checkbox" id="chk-bungalows"> Inspection Bungalows
+                    </label>
+                    <label style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.85rem; color: var(--text-primary);">
+                        <input type="checkbox" id="chk-offices"> Gov Offices & Residents
+                    </label>
+                    <label style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.85rem; color: var(--text-primary);">
+                        <input type="checkbox" id="chk-worship"> Places of Worship
+                    </label>
+                    <label style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.85rem; color: var(--text-primary);">
+                        <input type="checkbox" id="chk-security"> Police Stations
+                    </label>
+                </div>
+            </div>
+
+
+            <!-- Parcel Details Panel -->
+            <div class="form-section">
+                <h3 class="section-title"><i class="fa fa-info-circle"></i> Parcel Details</h3>
+                <div class="panel-card" style="gap: 0.5rem;">
+                    <div class="detail-item">
+                        <span class="detail-label">Plot No:</span>
+                        <span class="detail-value" id="val-plot-no">--</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Khata No:</span>
+                        <span class="detail-value" id="val-khata-no">--</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">PNIU Code:</span>
+                        <span class="detail-value" id="val-pniu">--</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Centroid Lat:</span>
+                        <span class="detail-value" id="val-lat">--</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Centroid Lon:</span>
+                        <span class="detail-value" id="val-lon">--</span>
+                    </div>
+                    <div class="detail-item" style="flex-direction: column; align-items: flex-start; gap: 0.25rem;">
+                        <span class="detail-label">Owner Name(s):</span>
+                        <div id="val-owners" class="owners-list" style="font-size: 0.85rem; color: var(--text-primary); padding-left: 0.5rem; max-height: 100px; overflow-y: auto; width: 100%;">
+                            --
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Map Measurement Panel -->
+            <div class="form-section" id="measurement-section">
+                <h3 class="section-title"><i class="fa fa-calculator"></i> Boundary & Measurements</h3>
+                <div class="panel-card" id="measurement-card" style="gap: 0.5rem;">
+                    <div class="detail-item">
+                        <span class="detail-label">Area (Sq M):</span>
+                        <span class="detail-value" id="val-area-sqm">--</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Area (Acres):</span>
+                        <span class="detail-value" id="val-area-acres">--</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Area (Hectares):</span>
+                        <span class="detail-value" id="val-area-hectares">--</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Perimeter:</span>
+                        <span class="detail-value" id="val-perimeter">--</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Vertices Count:</span>
+                        <span class="detail-value" id="val-vertices-count">--</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Longest Side:</span>
+                        <span class="detail-value" id="val-longest-side">--</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Shortest Side:</span>
+                        <span class="detail-value" id="val-shortest-side">--</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Avg Side Length:</span>
+                        <span class="detail-value" id="val-avg-side">--</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Kurra Division Panel -->
+            <div class="form-section" id="kurra-section">
+                <h3 class="section-title"><i class="fa fa-pie-chart"></i> Kurra (Land Division)</h3>
+                <div class="panel-card" style="gap: 0.75rem;">
+                    <div class="form-group" style="margin-top: 0.5rem;">
+                        <label class="form-label">Manual Map Overrides</label>
+                        <div style="display: flex; gap: 0.25rem; flex-wrap: wrap;">
+                            <button class="btn-secondary" id="btn-add-tree" style="font-size: 0.75rem; padding: 0.25rem 0.5rem;" disabled><i class="fa fa-tree"></i> Add Tree</button>
+                            <button class="btn-secondary" id="btn-add-well" style="font-size: 0.75rem; padding: 0.25rem 0.5rem;" disabled><i class="fa fa-tint"></i> Add Well</button>
+                            <button class="btn-secondary" id="btn-delete-obj" style="font-size: 0.75rem; padding: 0.25rem 0.5rem; color: #ff6b6b;" disabled><i class="fa fa-trash"></i> Delete Obj</button>
+                        </div>
+                    </div>
+                    
+                    <div id="feature-summary" style="margin-top: 0.5rem; padding: 0.5rem; background: var(--panel-bg); border: 1px solid var(--border-color); border-radius: 4px; font-size: 0.85rem; display: none;">
+                        <strong>Detected Objects:</strong>
+                        <div id="feature-counts" style="margin-top: 0.25rem;"></div>
+                    </div>
+                    
+                    <div class="form-group" style="margin-top: 0.5rem;">
+                        <label class="form-label">Division Type</label>
+                        <div style="display: flex; gap: 1rem; align-items: center; color: var(--text-primary); font-size: 0.85rem;">
+                            <label><input type="radio" name="share_type" value="equal" checked> Equal Share</label>
+                            <label><input type="radio" name="share_type" value="custom"> Custom Share (%)</label>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group" id="equal-share-group">
+                        <label class="form-label" for="num-sharers">Number of Co-Sharers</label>
+                        <input type="number" id="num-sharers" min="2" max="10" value="2" style="width: 100%; padding: 0.5rem; background: var(--panel-bg); color: var(--text-primary); border: 1px solid var(--border-color); border-radius: 4px;">
+                    </div>
+                    
+                    <div class="form-group" id="custom-share-group" style="display: none;">
+                        <label class="form-label">Enter Percentages (Comma separated, e.g. 70,30)</label>
+                        <input type="text" id="custom-shares" placeholder="e.g. 50,25,25" style="width: 100%; padding: 0.5rem; background: var(--panel-bg); color: var(--text-primary); border: 1px solid var(--border-color); border-radius: 4px;">
+                    </div>
+                    
+                    <button class="btn-primary" id="btn-subdivide" style="width: 100%; padding: 0.5rem; margin-top: 0.5rem;" disabled>
+                        <i class="fa fa-cogs"></i> Generate Kurra Division
+                    </button>
+                    
+                    <div id="kurra-results" style="display: none; margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--border-color); font-size: 0.85rem; color: var(--text-primary);">
+                        <h4 style="margin: 0 0 0.5rem 0;">Division Summary</h4>
+                        <div id="kurra-results-content" style="max-height: 200px; overflow-y: auto;"></div>
+                        <button class="btn-secondary" id="btn-download-kurra-report" style="width: 100%; padding: 0.5rem; margin-top: 0.5rem;">
+                            <i class="fa fa-file-pdf-o"></i> Download Segregation Report
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Documents & Exports Panel -->
+            <div class="form-section">
+                <h3 class="section-title"><i class="fa fa-file-pdf-o"></i> Documents & Exports</h3>
+                <div class="panel-card" style="gap: 0.5rem; padding: 0.75rem;">
+                    <div style="display: flex; gap: 0.5rem; width: 100%;">
+                        <button class="btn-primary" id="btn-view-ldm" style="flex: 1; padding: 0.5rem; font-size: 0.85rem;" disabled>
+                            <i class="fa fa-eye"></i> View LPM
+                        </button>
+                        <button class="btn-primary" id="btn-download-ldm" style="flex: 1; padding: 0.5rem; font-size: 0.85rem;" disabled>
+                            <i class="fa fa-download"></i> PDF
+                        </button>
+                    </div>
+                    <div style="display: flex; gap: 0.5rem; width: 100%;">
+                        <button class="btn-secondary" id="btn-export-geojson" style="flex: 1; padding: 0.5rem; font-size: 0.85rem; background: rgba(255,255,255,0.05); border: 1px solid var(--border-color); color: var(--text-primary);" disabled>
+                            <i class="fa fa-globe"></i> GeoJSON
+                        </button>
+                        <button class="btn-secondary" id="btn-export-csv" style="flex: 1; padding: 0.5rem; font-size: 0.85rem; background: rgba(255,255,255,0.05); border: 1px solid var(--border-color); color: var(--text-primary);" disabled>
+                            <i class="fa fa-table"></i> CSV Data
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Scrap / Download Map Image -->
+            <button class="btn-primary" id="btn-download-map">
+                <i class="fa fa-download"></i> Scrape Cadastral Overlay
+            </button>
+            <button class="btn-primary" id="btn-clone-sheet" style="margin-top: 10px; background: linear-gradient(135deg, #00c6ff, #0072ff); border: none;">
+                <i class="fa fa-clone"></i> Clone & Download Vector Sheet (GeoJSON)
+            </button>
+        </div>
+    </div>
+
+    <!-- Map Area Layout -->
+    <div class="map-container">
+        <!-- OpenLayers Map Canvas -->
+        <div id="map"></div>
+
+        <!-- Custom Notification Toast -->
+        <div class="toast-notification" id="toast">
+            <i class="fa fa-exclamation-triangle toast-icon" id="toast-icon"></i>
+            <span class="toast-message" id="toast-message">Notification message here</span>
+        </div>
+
+        <!-- Loading Overlay -->
+        <div class="loading-overlay" id="loading">
+            <div class="spinner"></div>
+            <div class="loading-text" id="loading-text">Loading Cadastral Layers...</div>
+        </div>
+    </div>
+
+    <!-- PDF Report Modal Viewer -->
+    <div class="modal" id="pdf-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title" style="margin: 0; display: flex; align-items: center; gap: 0.5rem; color: var(--accent-color);">
+                    <i class="fa fa-file-pdf-o"></i> LPM / Land Detail Matrix Report
+                </h4>
+                <button class="modal-close" id="btn-close-pdf" style="background: none; border: none; color: var(--text-primary); font-size: 1.5rem; cursor: pointer; padding: 0 0.5rem;">
+                    &times;
+                </button>
+            </div>
+            <div class="modal-body" style="flex: 1; min-height: 500px; display: flex;">
+                <iframe id="pdf-iframe" src="" style="width: 100%; height: 100%; border: none; border-radius: 4px; background: white;"></iframe>
+            </div>
+        </div>
+    </div>
+
+    <!-- External jQuery -->
+    <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+    
+    <!-- OpenLayers JS -->
+    <script src="https://cdn.jsdelivr.net/gh/openlayers/openlayers.github.io@master/en/v6.15.1/build/ol.js"></script>
+
+    <!-- Custom GIS Javascript -->
+    <script src="app.js"></script>
+</body>
+</html>

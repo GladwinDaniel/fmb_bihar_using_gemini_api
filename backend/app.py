@@ -1,3 +1,50 @@
+# =============================================================================
+# BHUOVERLAY  Bihar Cadastral Map & Satellite Dashboard
+# Backend Flask API Server (app.py) -- Gemini API Edition
+# =============================================================================
+#
+# ROLE: This file is the central backend API gateway. It:
+#   1. Acts as a PROXY to the Bihar Government's BhuNaksha GIS server
+#      (government servers block direct browser cross-origin calls  CORS)
+#   2. Manages persistent HTTP sessions with BhuNaksha (cookie-based auth)
+#   3. Caches all responses on disk and in SQLite to work offline
+#   4. Provides REST API endpoints for the frontend (see ENDPOINT SUMMARY below)
+#
+# HOW TO RUN:
+#   cd backend && python app.py
+#   Server starts at http://127.0.0.1:5001
+#
+# ENDPOINT SUMMARY:
+#   POST /proxy/Levels/ListsAfterLevel         Cascading dropdown data
+#   POST /proxy/MapInfo/getVVVVExtentGeoref    Sheet bounding box (GPS/UTM)
+#   POST /proxy/MapInfo/getPlotAtXY            Plot No. from UTM coordinate
+#   POST /proxy/MapInfo/getPlotAtGPS           Plot No. from GPS coordinate (GPSUTM)
+#   POST /proxy/MapInfo/getPointsfromPNIU      Plot from 14-digit PNIU code
+#   POST /proxy/MapInfo/getGisCode             GIS code for admin. levels
+#   GET  /proxy/WMS                            WMS map tile proxy (cached PNG)
+#   POST /proxy/MapInfo/getPlotDetailsAndInspection  Full parcel data + DB persist
+#   GET  /proxy/Export/GeoJSON/<plot_no>       Export parcel as GeoJSON
+#   GET  /proxy/Export/CSV/<plot_no>           Export parcel as CSV
+#   POST /api/parcel/<plot_no>/subdivide       AI Kurra land division (Google Gemini API)
+#   POST /api/parcel/<plot_no>/generate_report  Generate PDF Kurra report
+#   POST /api/sheet/scrape_batch               Batch-scrape all plots in a sheet
+#   GET  /api/sheet/export_geojson             Export all cached plots in a sheet
+#
+# DEPENDENCIES (see requirements.txt):
+#   flask, flask-cors, flask-sqlalchemy  Web framework and ORM
+#   requests, urllib3                    HTTP client
+#   beautifulsoup4                       HTML parsing for BhuNaksha responses
+#   shapely, pyproj, numpy               Geospatial computations
+#   fpdf2, opencv-python                 PDF report generation
+#   pdfplumber                           PDF area extraction
+#
+# CONNECTED TO (see CONNECTION_GUIDE.md for full API contract):
+#   Frontend:            frontend/app.js (jQuery AJAX)
+#   BhuNaksha Server:    https://bhunaksha.bihar.gov.in
+#   Bihar ArcGIS Server: https://gisserver.bihar.gov.in
+#   Google Gemini API:   https://generativelanguage.googleapis.com (GEMINI_API_KEY required)
+# =============================================================================
+
 import sys
 import os
 import json
@@ -10,30 +57,64 @@ from flask import Flask, render_template, request, Response, jsonify
 from shapely.geometry import Polygon, Point
 from models import db, Parcel, ParcelVertex, BoundarySegment, LdmReport
 import subdivide
-import cv_detector
 
 # Disable insecure request warnings for self-signed certificates
+# Bihar government servers use self-signed TLS certificates  this suppresses
+# the InsecureRequestWarning that would otherwise flood the console.
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
+from flask_cors import CORS
+
+# --- Flask App Initialization ---
+# CORS(app) allows the browser frontend (file://, localhost:8080) to call
+# this API running on a different port (5001) without CORS errors.
+# The SQLite database is stored at backend/instance/bhunaksha.db and is
+# automatically created on first run (db.create_all() below).
 app = Flask(__name__)
+CORS(app)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///bhunaksha.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db.init_app(app)
 
+# PROCESS: Create all SQLite tables on startup if they don't exist yet.
+# Tables created: parcels, parcel_vertices, boundary_segments, ldm_reports
+# Schema defined in models.py
 with app.app_context():
     db.create_all()
 
 BHUNAKSHA_URL = "https://bhunaksha.bihar.gov.in"
 
-# Global session to maintain cookies
+# --- Session Management ---
+# All BhuNaksha API calls must be made with a valid server-side session.
+# BhuNaksha uses cookie-based authentication (JSESSIONID). The session object
+# persists cookies across all requests made through this backend.
+# Session cookies are saved to disk (session_cookies.json) so they survive
+# backend restarts without needing to re-initialize.
 session = requests.Session()
-session.verify = False
+session.verify = False  # Disable SSL verification for self-signed government certs
 
-# Persistent cache files
+# =============================================================================
+# CACHING LAYER
+# =============================================================================
+# WHY: BhuNaksha is a government server that can be slow or offline. All API
+# responses are cached to JSON files on disk. Cached responses are served
+# instantly on subsequent requests, making the app work fully offline after
+# the first data load.
+#
+# CACHE FILE LOCATIONS (inside backend/ directory):
+#   dropdown_cache.json      Administrative hierarchy (DistrictsSheets) ~1.2MB
+#   extent_cache.json        Sheet bounding boxes (GPS & UTM extents)
+#   giscode_cache.json       GIS code for each admin level combination
+#   pniu_cache.json          PNIU-to-plot-number lookups
+#   plot_at_xy_cache.json    UTM coordinateplot number lookups
+#   static/wms_cache/*.png   WMS tile PNGs (MD5-keyed filenames)
+#   instance/bhunaksha.db    SQLite: full parcel geometries + metadata
+# =============================================================================
 DROPDOWN_CACHE_FILE = "dropdown_cache.json"
 EXTENT_CACHE_FILE = "extent_cache.json"
 
 def load_json_cache(filename):
+    """Load a JSON cache file from disk. Returns empty dict if file not found."""
     try:
         if os.path.exists(filename):
             with open(filename, "r", encoding="utf-8") as f:
@@ -43,12 +124,14 @@ def load_json_cache(filename):
     return {}
 
 def save_json_cache(filename, data):
+    """Persist a dict to a JSON cache file on disk."""
     try:
         with open(filename, "w", encoding="utf-8") as f:
             json.dump(data, f, ensure_ascii=False, indent=2)
     except Exception as e:
         print(f"Error saving cache file {filename}: {e}")
 
+# Load all JSON caches into memory at startup for O(1) in-memory lookup
 lists_after_level_cache = load_json_cache(DROPDOWN_CACHE_FILE)
 vvvv_extent_cache = load_json_cache(EXTENT_CACHE_FILE)
 
@@ -59,6 +142,25 @@ PLOT_AT_XY_CACHE_FILE = "plot_at_xy_cache.json"
 giscode_cache = load_json_cache(GISCODE_CACHE_FILE)
 pniu_cache = load_json_cache(PNIU_CACHE_FILE)
 plot_at_xy_cache = load_json_cache(PLOT_AT_XY_CACHE_FILE)
+
+# =============================================================================
+# SESSION INITIALIZATION & RESILIENCE SYSTEM
+# =============================================================================
+# HOW BhuNaksha authentication works:
+#   1. We GET bhunaksha.bihar.gov.in/10/index.jsp to establish a JSESSIONID cookie
+#   2. We POST to indexmain.jsp to mark our session as active for Bihar (state=10)
+#   3. All subsequent API calls carry these cookies in the session object
+#   4. If a response comes back as HTML (instead of JSON), the session has expired
+#      and must be re-initialized (init_session(force=True))
+#   5. Cookies are saved to disk so the backend can restart without re-authing
+#
+# OFFLINE RESILIENCE:
+#   - server_offline_until: tracks when BhuNaksha last went down and suppresses
+#     retry attempts for 30 seconds (SERVER_OFFLINE_COOLDOWN)
+#   - enforce_rate_limit(): enforces 150ms minimum between BhuNaksha requests
+#     to avoid triggering server-side rate limiting
+#   - resilient_request(): wraps all BhuNaksha calls with exponential backoff retry
+# =============================================================================
 
 # Disk-based cookie persistence for BhuNaksha sessions
 COOKIE_FILE = "session_cookies.json"
@@ -85,19 +187,43 @@ def load_cookies(sess):
 
 # Initialize session with cooldown
 last_session_init_time = 0.0
+last_force_init_time = 0.0   # Separate cooldown even for forced re-inits
 session_init_success = False
+server_offline_until = 0.0   # Timestamp until which we know the server is unreachable
+
+SERVER_OFFLINE_COOLDOWN = 30.0  # Don't retry a known-down server for 30 seconds
+FORCE_INIT_COOLDOWN = 30.0      # Minimum gap between forced session re-inits
+
+def mark_server_offline():
+    """Called when a connection to BhuNaksha times out or fails hard."""
+    global server_offline_until
+    import time
+    server_offline_until = time.time() + SERVER_OFFLINE_COOLDOWN
+    print(f"BhuNaksha server marked offline for {SERVER_OFFLINE_COOLDOWN:.0f}s.")
+
+def is_server_offline():
+    import time
+    return time.time() < server_offline_until
 
 def init_session(force=False):
     """Establishes the session cookies with BhuNaksha, using disk cache if available."""
-    global session, last_session_init_time, session_init_success
+    global session, last_session_init_time, last_force_init_time, session_init_success
     import time
-    
+
     current_time = time.time()
-    # Apply cooldown of 60 seconds unless forced
-    if not force and current_time - last_session_init_time < 60:
-        print("Skipping session initialization due to cooldown.")
-        return session_init_success
-        
+
+    if force:
+        # Even forced re-inits get a 30s cooldown to stop hammering a dead server
+        if current_time - last_force_init_time < FORCE_INIT_COOLDOWN:
+            print(f"Skipping forced session re-init: {FORCE_INIT_COOLDOWN:.0f}s cooldown active ({current_time - last_force_init_time:.1f}s ago).")
+            return session_init_success
+        last_force_init_time = current_time
+    else:
+        # Apply normal cooldown of 60 seconds
+        if current_time - last_session_init_time < 60:
+            print("Skipping session initialization due to cooldown.")
+            return session_init_success
+
     last_session_init_time = current_time
     
     # Initialize fresh session object
@@ -130,6 +256,10 @@ def init_session(force=False):
     except Exception as e:
         print("Error establishing session:", e)
         session_init_success = False
+        # If it's a connectivity failure, mark server offline so we stop hammering it
+        if isinstance(e, (requests.exceptions.ConnectionError, requests.exceptions.Timeout,
+                          requests.exceptions.ReadTimeout, requests.exceptions.ConnectTimeout)):
+            mark_server_offline()
         return False
 
 # Initialize on startup
@@ -152,67 +282,92 @@ def resilient_request(method, url, max_retries=3, **kwargs):
     """
     Performs requests with:
       - Rate limiting (spacing remote requests by at least 150ms)
+      - Fast-fail when BhuNaksha is known offline (server_offline_until)
+      - Session recovery on HTML/401/403 responses (with force cooldown)
       - Exponential backoff with random jitter on retries
-      - Connection error/timeout handling
-      - Dynamic session recovery on HTML redirect or 401/403 auth errors
     """
     import time
     import random
-    
+
     is_bhunaksha = BHUNAKSHA_URL in url
-    
+
+    # Fast-fail immediately if we know the server is down  no point waiting 12s
+    if is_bhunaksha and is_server_offline():
+        remaining = server_offline_until - time.time()
+        raise requests.exceptions.ConnectionError(
+            f"BhuNaksha server known offline for another {remaining:.0f}s  skipping request."
+        )
+
     # Enforce global rate limit to avoid trigger-happy server defenses
     if is_bhunaksha:
         enforce_rate_limit()
-        
+
     base_delay = 1.0  # start with 1 second delay
-    
+
     for attempt in range(1, max_retries + 1):
         try:
             # Set default timeout of 12 seconds if not provided
             if 'timeout' not in kwargs:
                 kwargs['timeout'] = 12
-                
+
             if method.upper() == 'POST':
                 r = session.post(url, **kwargs)
             else:
                 r = session.get(url, **kwargs)
-                
-            # Detect expired/redirected sessions
+
+            # Detect expired/redirected sessions (HTML instead of JSON)
             is_html_error = False
             if is_bhunaksha:
                 content_type = r.headers.get("Content-Type", "")
                 is_html_error = content_type.startswith("text/html") or r.text.strip().startswith("<")
-                
-            # If session is invalid (and we're not asking for standard HTML/WMS)
+
+            # If session is invalid (and we're not requesting WMS tiles)
             if is_bhunaksha and (r.status_code in [401, 403] or is_html_error) and "WMS" not in url:
                 print(f"Auth/session error on {url} (HTTP {r.status_code}/HTML response). Attempting session re-init...")
+                # init_session(force=True) has its own 30s cooldown  will skip if recently tried
                 if init_session(force=True):
                     # Update referer header if present
                     if 'headers' in kwargs and 'Referer' in kwargs['headers']:
                         kwargs['headers']['Referer'] = f"{BHUNAKSHA_URL}/10/indexmain.jsp"
-                    # Retry immediately with fresh session
+                    # Retry immediately with fresh session (don't count as a retry attempt)
                     if method.upper() == 'POST':
                         r = session.post(url, **kwargs)
                     else:
                         r = session.get(url, **kwargs)
-            
-            # If server has an internal error (500) or bad status code
+                else:
+                    # Session re-init failed (server offline)  stop immediately, don't retry
+                    raise requests.exceptions.ConnectionError(
+                        f"Session re-init failed for {url}  server unreachable."
+                    )
+
+            # If server has an internal error (500-504)  worth retrying
             if r.status_code in [500, 502, 503, 504]:
                 raise requests.exceptions.HTTPError(f"HTTP {r.status_code}", response=r)
-                
+
             return r
-            
+
+        except (requests.exceptions.Timeout, requests.exceptions.ConnectTimeout,
+                requests.exceptions.ReadTimeout) as e:
+            print(f"Request timed out ({url}): {e} (Attempt {attempt} of {max_retries})")
+            mark_server_offline()
+            raise e  # Don't retry timeouts  it means server is down, bail immediately
+
         except (requests.exceptions.RequestException, ConnectionError, Exception) as e:
             print(f"Request failed ({url}): {e} (Attempt {attempt} of {max_retries})")
-            
+
+            # Bail out immediately if we know the server is offline or session recovery failed
+            err_str = str(e)
+            if "known offline" in err_str or "re-init failed" in err_str or "recovery failed" in err_str:
+                raise e
+
             if attempt == max_retries:
                 raise e
-                
+
             # Calculate exponential backoff delay with random jitter
             delay = (base_delay * 2 ** attempt) + random.uniform(0.1, 1.0)
             print(f"Sleeping for {delay:.2f}s before retrying...")
             time.sleep(delay)
+
 
 def safe_post(url, data, headers, referer_path="/10/indexmain.jsp"):
     """Performs a POST request utilizing the resilient requester wrapper."""
@@ -232,10 +387,28 @@ def get_proxy_headers(referer_path="/10/indexmain.jsp", content_type=None):
         headers["Content-Type"] = content_type
     return headers
 
+# =============================================================================
+# API ROUTES
+# =============================================================================
+
+# --- ROUTE 1: Health Check ---
+# Called by: browser/monitoring tools
+# Returns a simple JSON status to confirm the backend is running.
 @app.route("/")
 def home():
-    return render_template("index.html")
+    return jsonify({
+        "status": "online",
+        "service": "Bihar Cadastral Map & Satellite Dashboard (Bhu-Overlay) API"
+    })
 
+# --- ROUTE 2: Administrative Dropdown Data ---
+# Called by: frontend app.js initDropdowns() and fetchDropdown()
+# PROCESS:
+#   1. Receive {state, level, codes} from frontend dropdown cascade
+#   2. Check in-memory cache (loaded from dropdown_cache.json)  serve immediately if found
+#   3. If not cached: POST to BhuNaksha /rest/Levels/ListsAfterLevel
+#   4. Parse JSON response, save to cache, return to frontend
+# NOTE: The cache file (~1.2MB) is pre-populated and rarely needs server hits.
 @app.route("/proxy/Levels/ListsAfterLevel", methods=["POST"])
 def proxy_lists_after_level():
     data = request.form.to_dict()
@@ -265,6 +438,15 @@ def proxy_lists_after_level():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+# --- ROUTE 3: Sheet Bounding Box ---
+# Called by: frontend app.js loadVillageSheet()
+# PROCESS:
+#   1. Receive {state, gisLevels, srs}  srs="4326" for GPS, srs="0" for UTM
+#   2. Check extent_cache.json  serve from cache if available
+#   3. If not cached: POST to BhuNaksha /rest/MapInfo/getVVVVExtentGeoref
+#   4. Return {gisCode, xmin, ymin, xmax, ymax}
+# NOTE: Both GPS (4326) and UTM (0) extents are cached since both are needed
+#       for coordinate conversions in getPlotAtGPS and getPlotDetailsAndInspection.
 @app.route("/proxy/MapInfo/getVVVVExtentGeoref", methods=["POST"])
 def proxy_extent():
     data = request.form.to_dict()
@@ -293,6 +475,13 @@ def proxy_extent():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+# --- ROUTE 4: Plot Number from UTM Coordinate ---
+# Called by: scrape_batch() internally during grid sampling
+# PROCESS:
+#   1. Receive {state, giscode, x (UTM Easting), y (UTM Northing)}
+#   2. Check plot_at_xy_cache.json  serve from cache if found (rounded to 2 decimal places)
+#   3. If not cached: POST to BhuNaksha /rest/MapInfo/getPlotAtXY
+#   4. Return the plot number string (e.g., "1587")
 @app.route("/proxy/MapInfo/getPlotAtXY", methods=["POST"])
 def proxy_plot_at_xy():
     data = request.form.to_dict()
@@ -325,6 +514,18 @@ def proxy_plot_at_xy():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+# --- ROUTE 5: Plot Number from GPS Coordinate (Click-to-Select) ---
+# Called by: frontend app.js map.on("singleclick") handler
+# PROCESS:
+#   STEP 1  Check SQLite database: Does any cached parcel polygon contain this GPS point?
+#              If yes: return plot_no immediately (works offline)
+#   STEP 2  Fetch GPS extent (srs=4326) and UTM extent (srs=0) from cache or BhuNaksha
+#   STEP 3  Convert GPS [lon, lat] to UTM [x, y] using pyproj (EPSG:4326  EPSG:32645)
+#             Fallback: bounding box linear interpolation if pyproj fails
+#   STEP 4  POST to BhuNaksha /rest/MapInfo/getPlotAtXY with UTM coordinates
+#   STEP 5  Return {kide: "plot_no"} to frontend
+# NOTE: BhuNaksha only understands UTM coordinates in its native coordinate system.
+#       GPS  UTM conversion is the critical step that makes map clicks work.
 @app.route("/proxy/MapInfo/getPlotAtGPS", methods=["POST"])
 def get_plot_at_gps():
     """Converts input GPS coordinate [lon, lat] to local village UTM coordinates using 
@@ -450,6 +651,13 @@ def get_plot_at_gps():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+# --- ROUTE 6: PNIU Search ---
+# Called by: frontend app.js executePniuSearch()
+# PROCESS:
+#   1. Receive {state, giscode, pniu}  PNIU is a 14-digit unique plot identifier
+#   2. Check pniu_cache.json for cached result
+#   3. If not cached: POST to BhuNaksha /rest/MapInfo/getPointsfromPNIU
+#   4. Return the raw comma-delimited string. Frontend extracts plot_no from field index 5.
 @app.route("/proxy/MapInfo/getPointsfromPNIU", methods=["POST"])
 def proxy_pniu_points():
     data = request.form.to_dict()
@@ -477,6 +685,10 @@ def proxy_pniu_points():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+# --- ROUTE 7: GIS Code Lookup ---
+# Called by: internal use
+# Returns the alphanumeric GIS code for a given set of admin level codes.
+# Cached in giscode_cache.json.
 @app.route("/proxy/MapInfo/getGisCode", methods=["POST"])
 def proxy_giscode():
     data = request.form.to_dict()
@@ -503,6 +715,18 @@ def proxy_giscode():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+# --- ROUTE 8: WMS Map Tile Proxy ---
+# Called by: OpenLayers TileWMS source in frontend (automatically as map is panned/zoomed)
+# PROCESS:
+#   1. Receive WMS GetMap parameters (LAYERS, gis_code, BBOX, WIDTH, HEIGHT, etc.)
+#   2. Compute MD5 hash of all parameters as cache key
+#   3. Check disk cache at static/wms_cache/{md5}.png  serve instantly if found
+#   4. If not cached: GET from BhuNaksha /WMS endpoint
+#   5. Validate response is actually an image (not an HTML session-expired page)
+#   6. Save PNG to disk cache, return image bytes to browser
+#   7. On any failure: return a 1x1 transparent PNG so the map doesn't break
+# NOTE: This proxy is necessary because browser CORS policy blocks direct calls
+#       to bhunaksha.bihar.gov.in from JavaScript.
 @app.route("/proxy/WMS", methods=["GET"])
 def proxy_wms():
     import hashlib
@@ -516,8 +740,10 @@ def proxy_wms():
         param_str = "&".join(f"{k}={p[k]}" for k in sorted_keys)
         return hashlib.md5(param_str.encode("utf-8")).hexdigest()
 
+    # Primary legacy hash (exact params as received)
     legacy_hash = _hash_from_params(params)
 
+    # Normalized params hash to avoid misses from key/value casing differences
     normalized = {}
     for k, v in params.items():
         nk = k.strip().upper()
@@ -527,6 +753,7 @@ def proxy_wms():
         normalized[nk] = nv
     normalized_hash = _hash_from_params(normalized)
 
+    # Fallback hash with only essential WMS keys to maximize offline cache hits
     essential_keys = [
         "SERVICE", "VERSION", "REQUEST", "LAYERS", "STYLES", "FORMAT",
         "TRANSPARENT", "SRS", "CRS", "GEO_CODE", "GIS_CODE", "STATE",
@@ -535,12 +762,13 @@ def proxy_wms():
     reduced = {k: normalized[k] for k in essential_keys if k in normalized}
     reduced_hash = _hash_from_params(reduced) if reduced else normalized_hash
 
-    backend_cache_dir = Path(__file__).resolve().parent / "backend" / "static" / "wms_cache"
-    root_cache_dir = Path(__file__).resolve().parent / "static" / "wms_cache"
-    cache_dirs = [root_cache_dir, backend_cache_dir]
-    candidate_hashes = [legacy_hash, normalized_hash, reduced_hash]
+    # Look in both possible cache roots (supports running app from backend/ or repo root)
+    backend_cache_dir = Path(__file__).resolve().parent / "static" / "wms_cache"
+    root_cache_dir = Path(__file__).resolve().parent.parent / "static" / "wms_cache"
+    cache_dirs = [backend_cache_dir, root_cache_dir]
 
-    # 2. Return from disk cache if exists
+    # 2. Return from disk cache if exists for any compatible hash key
+    candidate_hashes = [legacy_hash, normalized_hash, reduced_hash]
     for cdir in cache_dirs:
         for h in candidate_hashes:
             cpath = cdir / f"{h}.png"
@@ -559,8 +787,12 @@ def proxy_wms():
     url = f"{BHUNAKSHA_URL}/WMS"
     headers = get_proxy_headers()
     try:
-        # Request with a slightly shorter timeout (10s) to keep app responsive
-        r = session.get(url, params=params, headers=headers, timeout=10)
+        # Check offline state before calling resilient_request to fail fast
+        if is_server_offline():
+            raise requests.exceptions.ConnectionError("BhuNaksha server known offline  skipping WMS request.")
+
+        # Request using resilient_request with max_retries=1 to fail fast and respect rate limits
+        r = resilient_request('GET', url, max_retries=1, params=params, headers=headers, timeout=10)
         
         # Check if we got an actual image back or an HTML redirect/session-expired page
         content_type = r.headers.get("Content-Type", "")
@@ -569,11 +801,14 @@ def proxy_wms():
         if (r.status_code in [401, 403] or is_html_error):
             print("WMS request detected expired/missing session. Re-initializing session...")
             if init_session(force=True):
-                r = session.get(url, params=params, headers=headers, timeout=10)
+                # Retry with resilient_request
+                r = resilient_request('GET', url, max_retries=1, params=params, headers=headers, timeout=10)
                 content_type = r.headers.get("Content-Type", "")
         
         if r.status_code == 200 and content_type.startswith("image/"):
             try:
+                # Write under both legacy and normalized names in both cache roots.
+                # This keeps backward compatibility and improves future offline hits.
                 for cdir in cache_dirs:
                     os.makedirs(str(cdir), exist_ok=True)
                     for h in set(candidate_hashes):
@@ -590,6 +825,42 @@ def proxy_wms():
         print(f"WMS request exception: {e}. Returning transparent PNG.")
         return Response(transparent_png, status=200, content_type="image/png")
 
+# --- ROUTE 9: Full Parcel Details + Geometry Fetch ---
+# Called by: frontend app.js selectPlotByNumber()
+# This is the MOST COMPLEX endpoint  it is the core data pipeline.
+#
+# PROCESS FLOW:
+#   STEP 1  Check SQLite (Parcel table) by {district, circle, mouza, sheet, plot_no}
+#              If found in DB: serve cached data immediately (fast path)
+#              If report PDF is missing from disk: re-download it from BhuNaksha
+#              Convert cached UTM centroid to GPS if needed
+#              Extract official area from PDF using pdf_parser.py
+#              Return {success, cached:true, parcel, vertices, segments, report}
+#
+#   STEP 2 (if not in DB)  Fetch from BhuNaksha APIs (slow path):
+#     A. ScalarDatahandler (GET): Returns owner names (HTML table) + khata_no + PNIU
+#         BeautifulSoup parses the HTML to extract    (owner names)
+#     B. getPlotInfo (POST): Returns WKT polygon geometry ("POLYGON ((x1 y1, x2 y2, ...))"
+#         shapely.wkt.loads() parses the WKT
+#         Polygon area and perimeter calculated in UTM (square meters)
+#         Each UTM vertex converted to GPS (lon, lat) via pyproj or bbox interpolation
+#     C. PlotReportPDF (POST): Returns the official LPM report as base64-encoded PDF
+#         Decode base64  validate PDF header  save to static/reports/{giscode}_{plot_no}.pdf
+#
+#   STEP 3  Persist to SQLite:
+#      Parcel row + ParcelVertex rows + BoundarySegment rows + LdmReport row
+#      All future requests for this plot are served from STEP 1 (cache hit)
+#
+#   STEP 4  Extract official area from PDF using pdf_parser.py
+#
+#   STEP 5  Return complete parcel data to frontend:
+#     {success, cached:false, parcel{...}, vertices[...], segments[...], report{url}}
+#
+# RESPONSE used by frontend to:
+#    Populate the sidebar (plot_no, khata_no, owner_names, area, perimeter)
+#    Draw the polygon boundary on the OpenLayers map (vectorSource)
+#    Zoom the map to the parcel bounding box
+#    Enable Export (GeoJSON, CSV) and Kurra Division buttons
 @app.route("/proxy/MapInfo/getPlotDetailsAndInspection", methods=["POST"])
 def get_plot_details_and_inspection():
     data = request.form.to_dict()
@@ -699,7 +970,6 @@ def get_plot_details_and_inspection():
             # Extract area from PDF if possible
             official_area_ha = None
             if report_url:
-                import os
                 pdf_path = os.path.join(app.root_path, report_url.lstrip("/"))
                 if os.path.exists(pdf_path):
                     try:
@@ -823,6 +1093,7 @@ def get_plot_details_and_inspection():
         print("ScalarDatahandler error:", e)
     
     # 2. Try to fetch geometry and metadata from getPlotInfo (non-fatal, fast-fail)
+    r_geom_failed = False
     try:
         url_geom = f"{BHUNAKSHA_URL}/rest/MapInfo/getPlotInfo"
         geom_headers = get_proxy_headers(content_type="application/x-www-form-urlencoded; charset=UTF-8")
@@ -830,7 +1101,9 @@ def get_plot_details_and_inspection():
             "state": state, "giscode": giscode, "plotno": plot_no
         }, headers=geom_headers)
         
-        if r_geom and r_geom.status_code == 200:
+        if r_geom is None:
+            r_geom_failed = True
+        elif r_geom.status_code == 200:
             data_geom = r_geom.json()
             
             if not plot_id or plot_id == plot_no:
@@ -1036,15 +1309,19 @@ def get_plot_details_and_inspection():
                 print("Error converting fallback centroid UTM to GPS:", coord_err)
 
     if not vertices_list:
+        if r_geom_failed:
+            err_msg = "BhuNaksha government server is currently offline or unreachable. Selected parcel details cannot be retrieved because it is not cached in the local database."
+        else:
+            err_msg = f"Plot {plot_no} was not found or has no geometry on the BhuNaksha server."
+            
         return jsonify({
             "success": False,
-            "error": "BhuNaksha government server is currently offline or unreachable. Selected parcel details cannot be retrieved because it is not cached in the local database."
+            "error": err_msg
         }), 502
 
     # Extract Area from PDF if it was saved
     official_area_ha = None
     if local_report_url:
-        import os
         pdf_path = os.path.join(app.root_path, local_report_url.lstrip("/"))
         if os.path.exists(pdf_path):
             try:
@@ -1084,11 +1361,17 @@ def get_plot_details_and_inspection():
         "report": {"url": local_report_url}
     })
 
+# --- ROUTE 10: Export Parcel as GeoJSON ---
+# Called by: frontend app.js #btn-export-geojson click handler
+# PROCESS:
+#   1. Look up parcel by parcel_id or plot_no in SQLite
+#   2. Build RFC 7946 GeoJSON Feature from stored vertex GPS coordinates
+#   3. Return with Content-Disposition: attachment header to trigger browser download
 @app.route("/proxy/Export/GeoJSON/<plot_no>", methods=["GET"])
 def export_geojson(plot_no):
     parcel_id = request.args.get("parcel_id")
     if parcel_id and parcel_id not in ("null", "undefined", ""):
-        parcel = Parcel.query.get(parcel_id)
+        parcel = db.session.get(Parcel, parcel_id)
     else:
         parcel = Parcel.query.filter_by(plot_no=plot_no).order_by(Parcel.id.desc()).first()
         
@@ -1124,11 +1407,17 @@ def export_geojson(plot_no):
     response.headers["Content-Disposition"] = f"attachment; filename=plot_{plot_no}.geojson"
     return response
 
+# --- ROUTE 11: Export Parcel as CSV ---
+# Called by: frontend app.js #btn-export-csv click handler
+# PROCESS:
+#   1. Look up parcel by parcel_id or plot_no in SQLite
+#   2. Write parcel metadata, all vertices (UTM + GPS coordinates), and segment lengths to CSV
+#   3. Return with Content-Disposition: attachment header to trigger browser download
 @app.route("/proxy/Export/CSV/<plot_no>", methods=["GET"])
 def export_csv(plot_no):
     parcel_id = request.args.get("parcel_id")
     if parcel_id and parcel_id not in ("null", "undefined", ""):
-        parcel = Parcel.query.get(parcel_id)
+        parcel = db.session.get(Parcel, parcel_id)
     else:
         parcel = Parcel.query.filter_by(plot_no=plot_no).order_by(Parcel.id.desc()).first()
         
@@ -1170,49 +1459,56 @@ def export_csv(plot_no):
         headers={"Content-Disposition": f"attachment; filename=plot_{plot_no}_boundary.csv"}
     )
 
-@app.route("/api/parcel/<plot_no>/nearby", methods=["GET"])
-def get_nearby_infrastructure(plot_no):
-    parcel_id = request.args.get("parcel_id")
-    gis_code = request.args.get("gis_code")
-    
-    if not parcel_id or not gis_code:
-        return jsonify({"error": "Missing parcel_id or gis_code"}), 400
-        
-    if parcel_id and parcel_id not in ("null", "undefined", ""):
-        parcel = Parcel.query.get(parcel_id)
-    else:
-        parcel = Parcel.query.filter_by(plot_no=plot_no).order_by(Parcel.id.desc()).first()
-        
-    if not parcel:
-        return jsonify({"error": "Parcel not found"}), 404
-        
-    vertices = sorted(parcel.vertices, key=lambda v: v.sequence_order)
-    if not vertices:
-        return jsonify({"error": "No valid geometry"}), 400
-        
-    poly_coords = [(v.x, v.y) for v in vertices]
-    if poly_coords[0] != poly_coords[-1]:
-        poly_coords.append(poly_coords[0])
-    poly = Polygon(poly_coords)
-    if not poly.is_valid:
-        poly = poly.buffer(0)
-        
-    import math
-    minx, miny, maxx, maxy = poly.bounds
-    lat_buffer = 100.0 / 111000.0
-    lon_buffer = 100.0 / (111000.0 * math.cos(math.radians((miny + maxy) / 2)))
-    
-    import cv_detector
-    gis_features = cv_detector.query_bihar_gis_features(
-        minx - lon_buffer, miny - lat_buffer, maxx + lon_buffer, maxy + lat_buffer
-    )
-    
-    return jsonify({
-        "success": True,
-        "roads": gis_features.get("roads", []),
-        "rivers": gis_features.get("rivers", [])
-    })
-
+# --- ROUTE 12: AI Kurra Land Division ---
+# Called by: frontend app.js #btn-subdivide click handler
+# This is the core AI feature of Bhu-Overlay.
+#
+# PROCESS FLOW:
+#   STEP 1  Load parcel geometry from SQLite using parcel_id
+#             Build Shapely Polygon from stored UTM vertex coordinates
+#             Initialize pyproj transformers: UTM 45N (EPSG:32645)  WGS84 (EPSG:4326)
+#
+#   STEP 2  Query Bihar GIS ArcGIS REST servers for real infrastructure vectors:
+#              gis_querier.get_nearby_vector_features() queries:
+#               - NHRoads, SHRoads, MDR, ROAD_BIHAR, Village_Road MapServers
+#               - Rivers, IrrigationStreams MapServers
+#              Returns sorted lists of road and river LineString geometries with:
+#               name, category, priority, distance_meters
+#              The closest touching road becomes the "primary frontage"
+#
+#   STEP 3  Generate mathematical split strategies:
+#              subdivide.generate_strategies() creates up to 4 strategies:
+#               1. Compact Cut (parallel to shortest side of min rotated rectangle)
+#               2. Longitudinal Cut (parallel to longest side)
+#               3. Road Access Cut (perpendicular to nearest road frontage)
+#               4. River Access Cut (perpendicular to nearest river)
+#              Each strategy splits the UTM polygon using binary search on cut lines
+#              Near-identical strategies (within 5 angle) are deduplicated
+#
+#   STEP 4  Pre-calculate per-strategy statistics for LLM context:
+#             For each strategy  sub-plot:
+#               - Road frontage length (meters): buffer(5m).intersection(road_line).length
+#               - River frontage length (meters): same method
+#               - Number of manually placed features (trees/wells) inside the sub-plot
+#
+#   STEP 5  Consult local LLM (llm_expert.consult_llm_for_division()):
+#              Builds a detailed prompt with:
+#               - Parcel metadata (district, circle, mouza, area, owners)
+#               - All strategy stats (frontage, river, features per sub-plot)
+#               - Road and river context
+#               - User custom preferences (mutual consent, Rule 109(g))
+#              LLM evaluates strategies against UP Revenue Code 2006 rules:
+#               Rule 109(b) compactness, 109(f) road access, 116(2) trees/wells
+#              LLM returns: recommended_strategy_index + explanation paragraph
+#              If LLM is offline: falls back to strategy index 0 (Compact Cut)
+#
+#   STEP 6  Convert winning sub-polygon UTM coordinates back to GPS (pyproj)
+#             Build GeoJSON FeatureCollection with per-sub-plot properties:
+#             sub_plot_id, share_percentage, area_sqm, perimeter_m, frontage_m,
+#             contained_features (trees/wells inside the sub-plot)
+#
+#   RESPONSE: GeoJSON FeatureCollection + strategy_name + llm_explanation + frontage_coords
+#   USED BY frontend to: draw colored sub-polygons on map + show AI explanation box
 @app.route("/api/parcel/<plot_no>/subdivide", methods=["POST"])
 def subdivide_parcel(plot_no):
     data = request.json
@@ -1229,7 +1525,7 @@ def subdivide_parcel(plot_no):
     
     parcel_id = request.args.get("parcel_id")
     if parcel_id and parcel_id not in ("null", "undefined", ""):
-        parcel = Parcel.query.get(parcel_id)
+        parcel = db.session.get(Parcel, parcel_id)
     else:
         parcel = Parcel.query.filter_by(plot_no=plot_no).order_by(Parcel.id.desc()).first()
         
@@ -1261,33 +1557,58 @@ def subdivide_parcel(plot_no):
     except Exception:
          return jsonify({"error": "Coordinate transformation failed"}), 500
          
-    # Query Bihar GIS MapServer for real roads and rivers
-    lats = [v.lat for v in vertices]
-    lons = [v.lon for v in vertices]
-    radius_m = 100.0
-    lat_buffer = radius_m / 111000.0
-    lon_buffer = radius_m / (111000.0 * math.cos(math.radians((min(lats) + max(lats)) / 2)))
-    
-    min_lon = min(lons) - lon_buffer
-    max_lon = max(lons) + lon_buffer
-    min_lat = min(lats) - lat_buffer
-    max_lat = max(lats) + lat_buffer
-    
-    import cv_detector
-    gis_features = cv_detector.query_bihar_gis_features(min_lon, min_lat, max_lon, max_lat)
-    
+    # Build parcel polygon in GPS coordinates for distance checks
+    import shapely.geometry
+    parcel_coords_gps = [(v.lon, v.lat) for v in vertices]
+    if parcel_coords_gps[0] != parcel_coords_gps[-1]:
+        parcel_coords_gps.append(parcel_coords_gps[0])
+    parcel_poly_gps = shapely.geometry.Polygon(parcel_coords_gps)
+    if not parcel_poly_gps.is_valid:
+        parcel_poly_gps = parcel_poly_gps.buffer(0)
+
+    # Query Bihar GIS MapServer for real vector roads and rivers using our querier
+    sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+    import gis_querier
+    try:
+        roads, rivers = gis_querier.get_nearby_vector_features(parcel_poly_gps)
+    except Exception as e:
+        print(f"ArcGIS REST query failed, falling back to empty geometries: {e}")
+        roads, rivers = [], []
+
     frontage_utm = []
-    if gis_features.get("roads"):
-        # Just pick the first road path for frontage strategy
-        road_gps_path = gis_features["roads"][0]["path"]
-        frontage_utm = [gps_to_utm(lon, lat) for lon, lat in road_gps_path]
+    road_name_for_llm = "None"
+    road_details_for_llm = []
+    
+    if roads:
+        # Choose the highest priority closest road as primary frontage
+        best_road = roads[0]
+        road_name_for_llm = best_road["name"]
+        frontage_utm = [gps_to_utm(pt[0], pt[1]) for pt in best_road["geometry"].coords]
         
+        # Build info for LLM
+        for rd in roads[:3]: # list top 3 nearby roads
+            road_details_for_llm.append({
+                "name": rd["name"],
+                "category": rd["category"],
+                "distance_meters": round(rd["distance_m"], 1)
+            })
+
     river_utm = []
-    if gis_features.get("rivers"):
-        river_gps_path = gis_features["rivers"][0]["path"]
-        river_utm = [gps_to_utm(lon, lat) for lon, lat in river_gps_path]
+    river_name_for_llm = "None"
+    river_details_for_llm = []
+    if rivers:
+        best_river = rivers[0]
+        river_name_for_llm = best_river["name"]
+        river_utm = [gps_to_utm(pt[0], pt[1]) for pt in best_river["geometry"].coords]
         
-    nearby_river = len(gis_features.get("rivers", [])) > 0
+        for rv in rivers[:3]:
+            river_details_for_llm.append({
+                "name": rv["name"],
+                "category": rv["category"],
+                "distance_meters": round(rv["distance_m"], 1)
+            })
+            
+    nearby_river = len(rivers) > 0
     
     import llm_expert
     try:
@@ -1325,7 +1646,11 @@ def subdivide_parcel(plot_no):
              "area_sqm": poly.area,
              "shares": shares,
              "has_frontage": len(frontage_utm) > 0,
+             "primary_road": road_name_for_llm,
+             "nearby_roads": road_details_for_llm,
              "nearby_river": nearby_river,
+             "primary_river": river_name_for_llm,
+             "nearby_rivers_list": river_details_for_llm,
              "features": trees_and_wells,
              "parcel_info": parcel_info,
              "user_preferences": user_preferences,
@@ -1346,8 +1671,7 @@ def subdivide_parcel(plot_no):
              explanation = llm_result.get("explanation")
          else:
              llm_failed = True
-             print("Gemini API Error fallback:", llm_result.get("error"))
-             explanation = "Google Gemini API unreachable or failed. Falling back to the default algorithmic strategy (Compact Cut)."
+             explanation = "LLM Server (LM Studio) unreachable or failed. Falling back to the default algorithmic strategy (Compact Cut)."
              
          best_strategy = strategies[best_idx]
          sub_polys = best_strategy["polys"]
@@ -1402,9 +1726,25 @@ def subdivide_parcel(plot_no):
         "features": results,
         "llm_explanation": explanation,
         "llm_failed": llm_failed,
-        "strategy_name": strategy_name
+        "strategy_name": strategy_name,
+        "frontage_coords": [[utm_to_gps(x, y)[0], utm_to_gps(x, y)[1]] for x, y in frontage_utm] if frontage_utm else []
     })
 
+# --- ROUTE 13: Generate PDF Kurra Report ---
+# Called by: frontend app.js #btn-download-kurra-report click handler
+# PROCESS:
+#   1. Receive {features, subdivisions, frontage, parcel_info} from frontend
+#      (frontend sends the sub-plot geometries it computed from the last subdivide call)
+#   2. Load parcel vertex GPS coordinates from SQLite
+#   3. Call report_generator.generate_kurra_report() which:
+#      A. Creates a white canvas image using NumPy
+#      B. Draws parcel outline, subdivision fills, road frontage, and feature dots with OpenCV
+#      C. Saves image to a temp file
+#      D. Builds a multi-page PDF using FPDF2:
+#         - Page 1: Land Details (district, mouza, khata, area) + map image
+#         - Page 2: Segregation Details (per-sub-plot stats) + AI explanation
+#      E. Returns raw PDF bytes
+#   4. Return bytes with Content-Disposition: attachment header for browser download
 @app.route("/api/parcel/<plot_no>/generate_report", methods=["POST"])
 def generate_report_route(plot_no):
     try:
@@ -1416,7 +1756,7 @@ def generate_report_route(plot_no):
         
         parcel_id = request.args.get("parcel_id")
         if parcel_id and parcel_id not in ("null", "undefined", ""):
-            parcel = Parcel.query.get(parcel_id)
+            parcel = db.session.get(Parcel, parcel_id)
         else:
             parcel = Parcel.query.filter_by(plot_no=plot_no).order_by(Parcel.id.desc()).first()
             
@@ -1439,7 +1779,7 @@ def generate_report_route(plot_no):
             return jsonify({"error": "Failed to generate report"}), 500
             
         return Response(
-            pdf_data,
+            bytes(pdf_data),
             mimetype="application/pdf",
             headers={"Content-Disposition": f"attachment; filename=Kurra_Report_{plot_no}.pdf"}
         )
@@ -1486,6 +1826,22 @@ def generate_grid_points(state, levels, grid_step=30.0):
         x += grid_step
     return points
 
+# --- ROUTE 14: Batch Sheet Scraper ---
+# Called by: frontend app.js #btn-clone-sheet click handler (looped)
+# PURPOSE: Auto-discover and cache ALL plot geometries in a given cadastral sheet.
+# PROCESS:
+#   1. Receive {state, giscode, levels, batch_index, batch_size, grid_step}
+#   2. generate_grid_points(): Create a uniform grid of UTM points (35m spacing)
+#      covering the entire sheet's UTM bounding box
+#   3. Load all already-known parcel polygons from SQLite to build skip list
+#   4. For each grid point in this batch:
+#      A. If point is inside a known polygon: skip (already discovered)
+#      B. If not: POST to BhuNaksha /rest/MapInfo/getPlotAtXY  get plot_no
+#      C. Call get_plot_details_and_inspection() in a test context to fetch + cache geometry
+#      D. Query new parcel polygon from DB and add to skip list
+#   5. Return progress: {batch_index, scanned_points, new_plots_found, total_plots_saved, is_done}
+# NOTE: Frontend loops this call (batch_index++) until is_done=true, then
+#       redirects to /api/sheet/export_geojson to download the full sheet as GeoJSON.
 @app.route("/api/sheet/scrape_batch", methods=["POST"])
 def scrape_batch():
     data = request.json or request.form.to_dict()
@@ -1633,6 +1989,13 @@ def scrape_batch():
         "is_done": end_idx >= total_points
     })
 
+# --- ROUTE 15: Export All Cached Plots in a Sheet as GeoJSON ---
+# Called by: frontend (triggered after batch scrape completes)
+# PROCESS:
+#   1. Parse admin level codes from the 'levels' query parameter
+#   2. Query ALL Parcel rows from SQLite matching {district, circle, mouza, sheet}
+#   3. Build a GeoJSON FeatureCollection with one Feature per parcel
+#   4. Return with Content-Disposition: attachment to download as .geojson file
 @app.route("/api/sheet/export_geojson", methods=["GET"])
 def export_sheet_geojson():
     state = request.args.get("state", "10")
@@ -1703,4 +2066,4 @@ def export_sheet_geojson():
     return response
 
 if __name__ == "__main__":
-    app.run(host="127.0.0.1", port=5002, debug=True, use_reloader=False)
+    app.run(host="127.0.0.1", port=5001, debug=True, use_reloader=False)

@@ -1,12 +1,43 @@
-Flask==3.0.3
-Flask-SQLAlchemy==3.1.1
-shapely==2.0.4
-pyproj==3.6.1
-requests==2.32.3
-pytest==9.1.1
-beautifulsoup4==4.15.0
-numpy>=1.20.0,<2.0.0
-pdfplumber==0.11.10
-opencv-python==4.13.0.92
-fpdf2==2.8.7
-python-dotenv==1.0.1
+# ============================================================
+# Bhu-Overlay  Bihar Cadastral Map & Satellite Dashboard
+# Python Backend Dependencies -- Gemini API Edition
+# ============================================================
+# Install all with:
+#   pip install -r requirements.txt
+# ============================================================
+
+# --- Web Framework ---
+flask==3.0.3                     # Core Flask web/API framework
+flask-cors==4.0.1                # Cross-Origin Resource Sharing (CORS) for browser AJAX calls
+flask-sqlalchemy==3.1.1          # SQLAlchemy ORM integration for Flask
+
+# --- Database ---
+sqlalchemy==2.0.30               # ORM (automatically installed with flask-sqlalchemy)
+
+# --- HTTP Client & Session Management ---
+requests==2.32.3                 # HTTP requests to BhuNaksha, Bihar GIS, and Gemini API
+urllib3==2.2.1                   # Underlying HTTP library; required to disable SSL warnings
+
+# --- HTML Parsing ---
+beautifulsoup4==4.12.3           # Parse BhuNaksha ScalarDatahandler HTML responses for owner/khata data
+lxml==5.2.2                      # High-performance parser used as BeautifulSoup backend
+
+# --- Geospatial / GIS ---
+shapely==2.0.4                   # Polygon geometry operations: splitting, containment, buffers
+pyproj==3.6.1                    # Coordinate transformation: WGS84 (EPSG:4326) <-> UTM Zone 45N (EPSG:32645)
+numpy>=1.20.0,<2.0.0             # Numerical arrays for geometry computations
+
+# --- PDF Generation ---
+fpdf2==2.7.9                     # Generate Kurra Division PDF reports (pure Python)
+
+# --- PDF Parsing ---
+pdfplumber==0.11.1               # Extract official area from BhuNaksha downloaded PDF reports
+
+# --- Image Processing (for PDF map rendering) ---
+opencv-python==4.10.0.84         # Draw polygon overlays and features on the parcel map canvas in the PDF
+
+# --- Environment Variables (for Gemini API key config) ---
+python-dotenv==1.0.1             # Load GEMINI_API_KEY / GEMINI_MODEL from a .env file
+
+# --- Testing ---
+pytest==8.2.2                    # Run backend unit tests: python -m pytest

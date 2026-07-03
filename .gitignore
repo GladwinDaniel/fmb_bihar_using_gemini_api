@@ -1,18 +1,51 @@
-# Python
+# Python caches
 __pycache__/
 *.py[cod]
 *$py.class
-.pytest_cache/
 
-# Databases
-instance/
-*.db
+# Local JSON caches for BhuNaksha
+dropdown_cache.json
+extent_cache.json
+local_proxy_response.json
+giscode_cache.json
+pniu_cache.json
+plot_at_xy_cache.json
 
-# Caches
+# Backend-generated cache/cookie files
+backend/dropdown_cache.json
+backend/extent_cache.json
+backend/giscode_cache.json
+backend/pniu_cache.json
+backend/plot_at_xy_cache.json
+backend/session_cookies.json
+session_cookies.json
+
+# WMS tile cache (generated at runtime)
 static/wms_cache/
+backend/static/wms_cache/
+
+# SQLite database (Phase 2)
+bhunaksha.db
+backend/instance/
+backend/instance/*.db
+
+# Downloaded PDF reports (Phase 2)
 static/reports/
 
-# IDEs
+# Python test cache
+.pytest_cache/
+
+# IDE / OS files
 .vscode/
 .idea/
-.gemini/
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+instance/
+*.txt
+
+# Local env files (API keys)
+.env
+backend/.env
+

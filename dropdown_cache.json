@@ -49858,5 +49858,90 @@
         "value": "03"
       }
     ]
+  ],
+  "10_4_38,01,01,0029,": [
+    [
+      {
+        "code": "SS",
+        "extraParm": null,
+        "extraParms": {
+          "hasData": true
+        },
+        "object": null,
+        "toStringIsCode": false,
+        "toStringIsValue": false,
+        "value": "Special Survey"
+      },
+      {
+        "code": "CS",
+        "extraParm": null,
+        "extraParms": {
+          "hasData": true
+        },
+        "object": null,
+        "toStringIsCode": false,
+        "toStringIsValue": false,
+        "value": "Cadastral Survey"
+      }
+    ],
+    [
+      {
+        "code": "00",
+        "extraParm": null,
+        "extraParms": {
+          "hasData": true
+        },
+        "object": null,
+        "toStringIsCode": false,
+        "toStringIsValue": false,
+        "value": "First Map"
+      },
+      {
+        "code": "01",
+        "extraParm": null,
+        "extraParms": {
+          "hasData": true
+        },
+        "object": null,
+        "toStringIsCode": false,
+        "toStringIsValue": false,
+        "value": "Boundary Verified Map"
+      },
+      {
+        "code": "02",
+        "extraParm": null,
+        "extraParms": {
+          "hasData": true
+        },
+        "object": null,
+        "toStringIsCode": false,
+        "toStringIsValue": false,
+        "value": "Khanapuri Updated Map"
+      },
+      {
+        "code": "03",
+        "extraParm": null,
+        "extraParms": {
+          "hasData": true
+        },
+        "object": null,
+        "toStringIsCode": false,
+        "toStringIsValue": false,
+        "value": "Draft Published Map"
+      }
+    ],
+    [
+      {
+        "code": "00",
+        "extraParm": null,
+        "extraParms": {
+          "hasData": true
+        },
+        "object": null,
+        "toStringIsCode": true,
+        "toStringIsValue": false,
+        "value": "00"
+      }
+    ]
   ]
 }

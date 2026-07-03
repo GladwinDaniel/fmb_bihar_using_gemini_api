@@ -23,10 +23,10 @@ graph TD
         end
         
         subgraph AppLogic [Application Logic app.js]
-            State[State Management <br> currentParcel, offset]
+            State[State Management <br> currentParcel]
             Init[Initialization & Dropdowns]
             Events[Event Listeners & UI Handlers]
-            GISLogic[GIS Logic & Map Alignment]
+            GISLogic[GIS Logic]
             KurraLogic[Kurra Division Integration]
             APICalls[Backend API Integration]
         end
@@ -85,6 +85,6 @@ graph TD
 
 3. **Application Logic (`app.js`)**:
    - Acts as the controller connecting the UI to the Map Engine and Backend.
-   - **State Management**: Maintains current map offsets for visual nudging (`offsetX`, `offsetY`), cached features (`osmFeaturesCache`), and current parcel details.
+   - **State Management**: Maintains cached features (`osmFeaturesCache`) and current parcel details.
    - **Event Listeners**: Listens to UI clicks (dropdowns, sliders, map clicks) and triggers corresponding GIS or API actions.
    - **API Integration**: Uses `$.post` and `$.ajax` to communicate with the Flask backend to fetch administrative boundaries, query plots by GPS, and trigger complex subdivision calculations.

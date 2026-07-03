@@ -1,6 +1,6 @@
-# Backend Architecture
+# Backend Architecture -- Gemini API Edition
 
-This document outlines the backend architecture of the Bihar Cadastral Map & Satellite Dashboard.
+This document outlines the backend architecture of the Bihar Cadastral Map & Satellite Dashboard (Gemini API version).
 
 ## Architecture Diagram
 
@@ -21,7 +21,7 @@ graph TD
         Subdivide[subdivide.py <br> Geospatial Polygon Splitting using Shapely]
         LLM[llm_expert.py <br> AI Strategy Selection]
         Report[report_generator.py <br> PDF/Report Generation]
-        CVDetector[cv_detector.py <br> Spatial Feature Querying]
+        GISQuerier[gis_querier.py <br> Spatial Feature Querying]
         PDFParser[pdf_parser.py <br> Land Record Extraction]
     end
 
@@ -37,7 +37,7 @@ graph TD
     subgraph External [External Services]
         BhuNaksha[BhuNaksha GIS & REST APIs]
         BiharGIS[Bihar Govt GIS Services]
-        LLMService[LLM Service Provider]
+        LLMService[Google Gemini API]
     end
 
     %% Connections
@@ -52,8 +52,8 @@ graph TD
     Router <--> Database
     
     %% Module Interaction
-    Router -->|Feature Request| CVDetector
-    CVDetector -->|Query Spatial Data| BiharGIS
+    Router -->|Feature Request| GISQuerier
+    GISQuerier -->|Query Spatial Data| BiharGIS
     
     Router -->|Parse Land Records| PDFParser
     
@@ -86,7 +86,7 @@ graph TD
 
 3. **Core Modules**:
    - **`subdivide.py`**: The geospatial engine for land division (Kurra). It uses the `shapely` library to calculate different ways to slice a polygon based on target ratios and frontage constraints.
-   - **`llm_expert.py`**: Acts as a decision engine. Once `subdivide.py` generates multiple valid subdivision strategies, it passes them to an LLM, which evaluates physical constraints (like trees, wells, or river adjacency) to select the most practical division.
+   - **`llm_expert.py`**: Acts as a decision engine. Once `subdivide.py` generates multiple valid subdivision strategies, it passes them to the **Google Gemini API** (via `GEMINI_API_KEY`), which evaluates physical constraints (like trees, wells, or river adjacency) to select the most practical division.
    - **`report_generator.py`**: Compiles the final subdivision decisions and parcel data into downloadable reports.
-   - **`cv_detector.py`**: Interfaces with external GIS services to detect nearby infrastructure and topological features relevant to a plot.
+   - **`gis_querier.py`**: Queries live road and river vector features from Bihar Government GIS servers around a parcel to determine frontage and adjacency constraints.
    - **`pdf_parser.py`**: Extracts text and area metrics directly from uploaded or queried land record PDFs.

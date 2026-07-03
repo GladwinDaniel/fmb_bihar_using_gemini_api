@@ -113,6 +113,19 @@ The AI Kurra Division engine sends subdivision strategy data to the **Google Gem
 
 ### Set the API Key
 
+### Choose LLM Provider (Gemini or Grok)
+
+By default, the backend uses Gemini. You can switch providers using `LLM_PROVIDER`.
+
+`LLM_PROVIDER=gemini` (default):
+- Required key: `GEMINI_API_KEY`
+- Optional model: `GEMINI_MODEL` (default: `gemini-2.5-flash`)
+
+`LLM_PROVIDER=grok`:
+- Required key: `GROK_API_KEY` (or `XAI_API_KEY`)
+- Optional model: `GROK_MODEL` (default: `grok-2-latest`)
+- Optional URL override: `GROK_API_URL` (default: `https://api.x.ai/v1/chat/completions`)
+
 **Option A -- Environment Variable (Recommended for quick start)**
 
 **Windows (Command Prompt):**
@@ -130,6 +143,20 @@ $env:GEMINI_API_KEY="your_api_key_here"
 export GEMINI_API_KEY="your_api_key_here"
 ```
 
+If using Grok, set these instead:
+
+**Windows (PowerShell):**
+```powershell
+$env:LLM_PROVIDER="grok"
+$env:GROK_API_KEY="your_grok_api_key_here"
+```
+
+**macOS / Linux:**
+```bash
+export LLM_PROVIDER="grok"
+export GROK_API_KEY="your_grok_api_key_here"
+```
+
 > [!IMPORTANT]
 > You must set this environment variable in the same terminal session where you run `python app.py`. The variable is lost when you close the terminal.
 
@@ -145,6 +172,11 @@ With this content:
 ```env
 GEMINI_API_KEY=your_api_key_here
 GEMINI_MODEL=gemini-2.5-flash
+# Optional provider switch:
+# LLM_PROVIDER=grok
+# GROK_API_KEY=your_grok_api_key_here
+# GROK_MODEL=grok-2-latest
+# GROK_API_URL=https://api.x.ai/v1/chat/completions
 ```
 
 The `python-dotenv` package will automatically load this file when the backend starts.
@@ -224,6 +256,50 @@ python -m http.server 8080
 ```
 
 Then open `http://localhost:8080/frontend/index.html`.
+
+---
+
+## Provider-Specific Command Packs (Windows PowerShell)
+
+Use one complete block depending on your LLM provider.
+
+### Gemini
+
+```powershell
+git clone https://github.com/GladwinDaniel/fmb_bihar_using_gemini_api.git
+cd fmb_bihar_using_gemini_api
+python -m venv venv
+.\venv\Scripts\Activate.ps1
+pip install -r requirements.txt
+$env:LLM_PROVIDER="gemini"
+$env:GEMINI_API_KEY="your_gemini_api_key_here"
+cd backend
+python app.py
+```
+
+### Grok
+
+```powershell
+git clone https://github.com/GladwinDaniel/fmb_bihar_using_gemini_api.git
+cd fmb_bihar_using_gemini_api
+python -m venv venv
+.\venv\Scripts\Activate.ps1
+pip install -r requirements.txt
+$env:LLM_PROVIDER="grok"
+$env:GROK_API_KEY="your_grok_api_key_here"
+# Optional:
+# $env:GROK_MODEL="grok-2-latest"
+# $env:GROK_API_URL="https://api.x.ai/v1/chat/completions"
+cd backend
+python app.py
+```
+
+Frontend in second terminal:
+
+```powershell
+cd fmb_bihar_using_gemini_api
+python -m http.server 8080
+```
 
 > [!TIP]
 > You can also open `frontend/index.html` directly by double-clicking the file in your file explorer.

@@ -1,18 +1,133 @@
 import os
 import json
 import requests
+import re
 
-def consult_llm_for_division(parcel_info, strategies):
-    """
-    Calls the Google Gemini API directly using a GEMINI_API_KEY environment variable.
-    Returns the LLM's explanation and its recommended strategy index (0-indexed).
-    """
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+except ImportError:
+    pass
+
+LLM_PROVIDER = os.environ.get("LLM_PROVIDER", "gemini").strip().lower()
+GEMINI_MODEL = os.environ.get("GEMINI_MODEL", "gemini-2.5-flash")
+GROK_MODEL = os.environ.get("GROK_MODEL", "grok-2-latest")
+GROK_API_URL = os.environ.get("GROK_API_URL", "https://api.x.ai/v1/chat/completions")
+
+
+def _extract_json_object(text):
+    if not text:
+        return None
+
+    candidate = text.strip()
+    if candidate.startswith("```"):
+        candidate = re.sub(r"^```[a-zA-Z]*\s*", "", candidate)
+        candidate = re.sub(r"\s*```$", "", candidate)
+
+    try:
+        return json.loads(candidate)
+    except Exception:
+        pass
+
+    start = candidate.find("{")
+    end = candidate.rfind("}")
+    if start != -1 and end != -1 and end > start:
+        snippet = candidate[start:end + 1]
+        try:
+            return json.loads(snippet)
+        except Exception:
+            return None
+    return None
+
+
+def _parse_llm_decision(content_text):
+    parsed = _extract_json_object(content_text)
+    if not parsed:
+        return None
+    return {
+        "recommended_index": int(parsed.get("recommended_strategy_index", 1)) - 1,
+        "explanation": parsed.get("explanation", "The LLM provided a recommendation.")
+    }
+
+
+def _call_gemini(system_prompt, user_prompt):
     api_key = os.environ.get("GEMINI_API_KEY")
     if not api_key:
         return {
             "success": False,
-            "error": "GEMINI_API_KEY environment variable is not set. Please set the GEMINI_API_KEY variable to run the LLM."
+            "error": "GEMINI_API_KEY is not set. Set GEMINI_API_KEY or switch provider via LLM_PROVIDER=grok."
         }
+
+    url = f"https://generativelanguage.googleapis.com/v1beta/models/{GEMINI_MODEL}:generateContent?key={api_key}"
+    payload = {
+        "contents": [{"parts": [{"text": user_prompt}]}],
+        "systemInstruction": {"parts": [{"text": system_prompt}]},
+        "generationConfig": {
+            "responseMimeType": "application/json",
+            "responseSchema": {
+                "type": "object",
+                "properties": {
+                    "recommended_strategy_index": {"type": "integer"},
+                    "explanation": {"type": "string"}
+                },
+                "required": ["recommended_strategy_index", "explanation"]
+            },
+            "temperature": 0.3
+        }
+    }
+
+    try:
+        response = requests.post(url, json=payload, headers={"Content-Type": "application/json"}, timeout=45)
+        if response.status_code != 200:
+            return {"success": False, "error": f"Gemini API returned status {response.status_code}: {response.text}"}
+
+        resp_json = response.json()
+        content_text = resp_json["candidates"][0]["content"]["parts"][0]["text"]
+        parsed = _parse_llm_decision(content_text)
+        if not parsed:
+            return {"success": False, "error": "Gemini response could not be parsed as decision JSON."}
+
+        return {"success": True, "recommended_index": parsed["recommended_index"], "explanation": parsed["explanation"]}
+    except Exception as e:
+        return {"success": False, "error": str(e)}
+
+
+def _call_grok(system_prompt, user_prompt):
+    api_key = os.environ.get("GROK_API_KEY") or os.environ.get("XAI_API_KEY")
+    if not api_key:
+        return {
+            "success": False,
+            "error": "GROK_API_KEY (or XAI_API_KEY) is not set. Set it or switch provider via LLM_PROVIDER=gemini."
+        }
+
+    payload = {
+        "model": GROK_MODEL,
+        "messages": [
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": user_prompt}
+        ],
+        "temperature": 0.3
+    }
+
+    headers = {"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"}
+
+    try:
+        response = requests.post(GROK_API_URL, json=payload, headers=headers, timeout=45)
+        if response.status_code != 200:
+            return {"success": False, "error": f"Grok API returned status {response.status_code}: {response.text}"}
+
+        resp_json = response.json()
+        content_text = resp_json["choices"][0]["message"]["content"]
+        parsed = _parse_llm_decision(content_text)
+        if not parsed:
+            return {"success": False, "error": "Grok response could not be parsed as decision JSON."}
+
+        return {"success": True, "recommended_index": parsed["recommended_index"], "explanation": parsed["explanation"]}
+    except Exception as e:
+        return {"success": False, "error": str(e)}
+
+def consult_llm_for_division(parcel_info, strategies):
+    """Calls configured provider (Gemini or Grok) and returns recommendation."""
 
     # Format strategies text
     str_text = ""
@@ -66,64 +181,10 @@ CRITICAL REQUIREMENT 2: If your chosen strategy violates a standard rule (like R
 CRITICAL REQUIREMENT 3: In your `explanation` paragraph, you MUST explicitly state the exact amount of Road Frontage AND River Frontage (in meters) that each sub-plot receives to justify your choice (e.g. "Both sub-plots receive exactly 12.5 meters of road frontage and 45.2 meters of river frontage...").
 """
 
-    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={api_key}"
-    
-    payload = {
-        "contents": [{
-            "parts": [{
-                "text": user_prompt
-            }]
-        }],
-        "systemInstruction": {
-            "parts": [{
-                "text": system_prompt
-            }]
-        },
-        "generationConfig": {
-            "responseMimeType": "application/json",
-            "responseSchema": {
-                "type": "object",
-                "properties": {
-                    "recommended_strategy_index": {
-                        "type": "integer"
-                    },
-                    "explanation": {
-                        "type": "string"
-                    }
-                },
-                "required": ["recommended_strategy_index", "explanation"]
-            },
-            "temperature": 0.3
-        }
-    }
-
-    print("\n--- SENDING PROMPT TO GEMINI API ---")
+    print(f"\n--- SENDING PROMPT TO {LLM_PROVIDER.upper()} ---")
     print(user_prompt)
-    print("------------------------------------\n")
+    print("----------------------------------------------\n")
 
-    try:
-        response = requests.post(url, json=payload, headers={"Content-Type": "application/json"}, timeout=30)
-        if response.status_code == 200:
-            resp_json = response.json()
-            content_text = resp_json['candidates'][0]['content']['parts'][0]['text']
-            
-            print("\n--- RECEIVED RESPONSE FROM GEMINI ---")
-            print(content_text)
-            print("-------------------------------------\n")
-            
-            result = json.loads(content_text)
-            return {
-                "success": True,
-                "recommended_index": result.get("recommended_strategy_index", 1) - 1, # 0-indexed
-                "explanation": result.get("explanation", "The LLM provided a recommendation.")
-            }
-        else:
-            return {
-                "success": False,
-                "error": f"Gemini API returned status {response.status_code}: {response.text}"
-            }
-    except Exception as e:
-        return {
-            "success": False,
-            "error": str(e)
-        }
+    if LLM_PROVIDER == "grok":
+        return _call_grok(system_prompt, user_prompt)
+    return _call_gemini(system_prompt, user_prompt)

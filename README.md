@@ -118,6 +118,25 @@ GEMINI_MODEL=gemini-2.5-flash
 
 > **Note:** If `GEMINI_API_KEY` is not set, the system automatically falls back to the first algorithmic subdivision strategy (Compact Cut).
 
+### Optional: Use Grok Instead of Gemini
+
+The backend supports both providers via environment variables:
+
+`LLM_PROVIDER=gemini` (default): use `GEMINI_API_KEY`
+
+`LLM_PROVIDER=grok`: use `GROK_API_KEY` (or `XAI_API_KEY`)
+
+PowerShell example:
+
+```powershell
+$env:LLM_PROVIDER="grok"
+$env:GROK_API_KEY="your_grok_api_key_here"
+```
+
+Optional Grok settings:
+- `GROK_MODEL` (default: `grok-2-latest`)
+- `GROK_API_URL` (default: `https://api.x.ai/v1/chat/completions`)
+
 ### 3. Start the Backend
 
 ```bash
@@ -161,6 +180,48 @@ python -m http.server 8080
 ```
 
 Then browse to: `http://localhost:8080/frontend/index.html`
+
+### 6. Provider Setup Command Packs
+
+Use one of the following command packs on a fresh Windows PowerShell terminal.
+
+Gemini:
+
+```powershell
+git clone https://github.com/GladwinDaniel/fmb_bihar_using_gemini_api.git
+cd fmb_bihar_using_gemini_api
+python -m venv venv
+.\venv\Scripts\Activate.ps1
+pip install -r requirements.txt
+$env:LLM_PROVIDER="gemini"
+$env:GEMINI_API_KEY="your_gemini_api_key_here"
+cd backend
+python app.py
+```
+
+Grok:
+
+```powershell
+git clone https://github.com/GladwinDaniel/fmb_bihar_using_gemini_api.git
+cd fmb_bihar_using_gemini_api
+python -m venv venv
+.\venv\Scripts\Activate.ps1
+pip install -r requirements.txt
+$env:LLM_PROVIDER="grok"
+$env:GROK_API_KEY="your_grok_api_key_here"
+# Optional:
+# $env:GROK_MODEL="grok-2-latest"
+# $env:GROK_API_URL="https://api.x.ai/v1/chat/completions"
+cd backend
+python app.py
+```
+
+Frontend (second terminal for either provider):
+
+```powershell
+cd fmb_bihar_using_gemini_api
+python -m http.server 8080
+```
 
 ---
 

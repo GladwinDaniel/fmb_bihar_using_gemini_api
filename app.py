@@ -1346,8 +1346,8 @@ def subdivide_parcel(plot_no):
              explanation = llm_result.get("explanation")
          else:
              llm_failed = True
-             print("Gemini API Error fallback:", llm_result.get("error"))
-             explanation = "Google Gemini API unreachable or failed. Falling back to the default algorithmic strategy (Compact Cut)."
+             print("LLM provider error fallback:", llm_result.get("error"))
+             explanation = f"Configured LLM provider failed ({llm_result.get('error', 'unknown error')}). Falling back to the default algorithmic strategy (Compact Cut)."
              
          best_strategy = strategies[best_idx]
          sub_polys = best_strategy["polys"]

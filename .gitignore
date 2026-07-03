@@ -60,3 +60,9 @@ instance/
 backend/.env
 !.env.example
 
+# Unignore pre-populated cache files for offline utility and smooth startup
+!dropdown_cache.json
+!extent_cache.json
+!backend/dropdown_cache.json
+!backend/extent_cache.json
+

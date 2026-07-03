@@ -41,12 +41,8 @@
 //   In prod: calls use relative URLs (same-origin server serves both)
 // =============================================================================
 
-// --- STEP 1: API URL Detection ---
-// Determines where to send all backend API requests.
-// Localhost/file://  http://127.0.0.1:5001 (local Flask server)
-// Production         '' (relative URL, same origin as frontend)
-const API_BASE_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.protocol === 'file:'
-    ? 'http://127.0.0.1:5001'
+const API_BASE_URL = window.location.port === '8080' || window.location.protocol === 'file:'
+    ? `${window.location.protocol === 'file:' ? 'http:' : window.location.protocol}//${window.location.hostname || '127.0.0.1'}:5001`
     : ''; // empty string in production/same-origin
 
 
